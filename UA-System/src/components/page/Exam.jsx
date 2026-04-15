@@ -3,6 +3,8 @@
 import "./Exam.css";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Exam() {
   const navigate = useNavigate();
@@ -131,6 +133,14 @@ function Exam() {
     const s = sec % 60;
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    toast.error("❌ Paste not allowed!", {
+    autoClose: 2000,
+  });
+
+  };
   const typeQuestions = [
     "Explain keystroke dynamics.",
     "What is feature vector in ML?",
@@ -211,6 +221,7 @@ function Exam() {
             onChange={(e) => handleTypeChange(i, e.target.value)}
             onKeyDown={handleKeyDown}
             onKeyUp={handleKeyUp}
+            onPaste={handlePaste} 
           />
         </div>
       ))}
@@ -235,7 +246,7 @@ function Exam() {
       <button onClick={handleSubmit}>
         Submit Exam
       </button>
-
+      <ToastContainer autoClose={2000} hideProgressBar={false}    closeButton={false}/>
     </div>
   );
 }
