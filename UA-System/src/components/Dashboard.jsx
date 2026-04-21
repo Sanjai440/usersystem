@@ -1,3 +1,82 @@
+// import { useNavigate } from "react-router-dom";
+// import { useEffect, useState } from "react";
+// import "./Dashboard.css";
+
+// function Dashboard() {
+//   const navigate = useNavigate();
+//   const user = JSON.parse(localStorage.getItem("user"));
+
+//   const [trainingDone, setTrainingDone] = useState(false);
+
+//   useEffect(() => {
+//     if (!user) {
+//       navigate("/");
+//     }
+//   }, [user, navigate]);
+
+//   useEffect(() => {
+//     const status = localStorage.getItem("trainingCompleted");
+//     setTrainingDone(status === "true");
+//   }, []);
+
+//   return (
+//     <>
+//       <h2>Welcome, {user?.name} 👋</h2>
+
+//       <div className="cards">
+
+//         <div className="card training">
+//           <h3>Training Model</h3>
+//           <p>Train your typing behavior</p>
+
+//           <button
+//             onClick={() => navigate("/app/training")}
+//             disabled={trainingDone}
+//           >
+//             {trainingDone ? "Completed ✅" : "Start Training"}
+//           </button>
+
+//           <p className="status">
+//             Status: {trainingDone ? "✅ Done" : "❌ Not Done"}
+//           </p>
+//         </div>
+
+//         <div className="card exam">
+//           <h3>Online Exam</h3>
+//           <p>Real-time monitoring test</p>
+
+//           <button
+//             onClick={() => navigate("/app/exam")}
+//             disabled={!trainingDone}
+//           >
+//             {trainingDone ? "Start Exam" : "Locked 🔒"}
+//           </button>
+
+//           <p className="status">
+//             Status: {trainingDone ? "🔓 Unlocked" : "🔒 Locked"}
+//           </p>
+//         </div>
+
+//       </div>
+//     </>
+//   );
+// }
+
+// export default Dashboard;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
@@ -14,10 +93,21 @@ function Dashboard() {
     }
   }, [user, navigate]);
 
+  // ✅ DB இருந்து fetch
   useEffect(() => {
-    const status = localStorage.getItem("trainingCompleted");
-    setTrainingDone(status === "true");
-  }, []);
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/user/${user.id}`);
+        const data = await res.json();
+
+        setTrainingDone(data.trainingCompleted);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (user?.id) fetchUser();
+  }, [user]);
 
   return (
     <>
