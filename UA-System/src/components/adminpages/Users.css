@@ -1,22 +1,30 @@
 .users-page {
   padding: 20px;
   font-family: Arial;
+  background: #f5f6fa;
 }
 
+/* SEARCH */
 .search {
-  padding: 8px;
-  width: 250px;
-  margin-bottom: 10px;
+  padding: 10px;
+  width: 260px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
+/* TABLE */
 table {
   width: 100%;
   border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border: 1px solid #eee;
+  padding: 12px;
   text-align: center;
 }
 
@@ -25,6 +33,7 @@ th {
   color: white;
 }
 
+/* STATUS */
 .active {
   color: green;
   font-weight: bold;
@@ -35,21 +44,32 @@ th {
   font-weight: bold;
 }
 
+/* BUTTONS */
 button {
   margin: 3px;
   padding: 6px 10px;
   cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.8;
 }
 
 .delete {
   background: red;
   color: white;
-  border: none;
 }
 
-/* Pagination */
+/* PAGINATION */
 .pagination {
   margin-top: 15px;
+}
+
+.pagination button {
+  background: #ddd;
 }
 
 .activePage {
@@ -57,20 +77,61 @@ button {
   color: white;
 }
 
-/* Modal */
+/* ================= MODAL ================= */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* MODAL BOX */
 .modalBox {
   background: white;
-  width: 300px;
-  margin: 100px auto;
+  width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+  gap: 8px;
+}
+
+.tabs button {
+  flex: 1;
+  background: #eee;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.tabs button:hover {
+  background: #ddd;
+}
+
+/* MODAL TEXT */
+.modalBox p {
+  margin: 6px 0;
+}
+
+/* CLOSE BUTTON */
+.modalBox button:last-child {
+  margin-top: 10px;
+  background: #333;
+  color: white;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
 }

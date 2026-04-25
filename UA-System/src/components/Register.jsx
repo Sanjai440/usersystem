@@ -1,3 +1,294 @@
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+// import "./Register.css";
+
+// function Register() {
+//   const navigate = useNavigate();
+
+//   const [username, setUsername] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [confirmPassword, setConfirmPassword] = useState("");
+
+//   const [errors, setErrors] = useState({});
+
+//   const validate = () => {
+//     let newErrors = {};
+
+//     if (!username) {
+//       newErrors.username = "Username is required";
+//     } else if (username.length < 3) {
+//       newErrors.username = "Min 3 characters required";
+//     }
+
+//     if (!email) {
+//       newErrors.email = "Email is required";
+//     } else if (!/\S+@\S+\.\S+/.test(email)) {
+//       newErrors.email = "Enter valid email";
+//     }
+
+//     if (!password) {
+//       newErrors.password = "Password is required";
+//     } 
+//     else if (password.length < 5) {
+//       newErrors.password = "Min 5 characters required";
+//     } 
+//     else if (!/[!@#$%^&*]/.test(password)) {
+//       newErrors.password = "Must include 1 special character";
+//     } 
+//     else if ((password.match(/[0-9]/g) || []).length < 3) {
+//       newErrors.password = "Must include at least 3 numbers";
+//     }
+
+//     if (!confirmPassword) {
+//       newErrors.confirmPassword = "Confirm your password";
+//     } else if (password !== confirmPassword) {
+//       newErrors.confirmPassword = "Passwords do not match";
+//     }
+
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   const handleRegister = async () => {
+//     if (!validate()) return;
+
+//     try {
+//       const res = await fetch("http://localhost:5000/register", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           username,
+//           email,
+//           password,
+//         }),
+//       });
+
+//       const result = await res.json();
+
+//       if (result.status === "saved") {
+//         toast.success("Registered Successfully ✅", {
+//           onClose: () => navigate("/"),
+//         });
+//       } else {
+//         toast.error("Register failed ❌");
+//       }
+//     } catch (err) {
+//       toast.error("Server error ❌");
+//     }
+//   };
+
+//   return (
+//     <div className="register-page">
+//       <div className="register-container">
+//         <h2>Register</h2>
+
+//         <input
+//           placeholder="Username"
+//           value={username}
+//           onChange={(e) => setUsername(e.target.value)}
+//         />
+//         {errors.username && (
+//           <p style={{ color: "red", fontSize: "12px" }}>
+//             {errors.username}
+//           </p>
+//         )}
+
+//         <input
+//           placeholder="Email"
+//           value={email}
+//           onChange={(e) => setEmail(e.target.value)}
+//         />
+//         {errors.email && (
+//           <p style={{ color: "red", fontSize: "12px" }}>
+//             {errors.email}
+//           </p>
+//         )}
+
+//         <input
+//           type="password"
+//           placeholder="Password"
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//         />
+//         {errors.password && (
+//           <p style={{ color: "red", fontSize: "12px" }}>
+//             {errors.password}
+//           </p>
+//         )}
+
+//         <input
+//           type="password"
+//           placeholder="Confirm Password"
+//           value={confirmPassword}
+//           onChange={(e) => setConfirmPassword(e.target.value)}
+//         />
+//         {errors.confirmPassword && (
+//           <p style={{ color: "red", fontSize: "12px" }}>
+//             {errors.confirmPassword}
+//           </p>
+//         )}
+
+//         <button onClick={handleRegister}>Register</button>
+
+//         <p onClick={() => navigate("/")}>
+//           Already user? Login
+//         </p>
+
+//         <ToastContainer
+//           position="top-right"
+//           autoClose={3000}
+//           closeButton={false}
+//           pauseOnHover={false}
+//           draggable={false}
+//         />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Register;
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+// import "./Register.css";
+
+// function Register() {
+//   const navigate = useNavigate();
+
+//   const [username, setUsername] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [confirmPassword, setConfirmPassword] = useState("");
+
+//   const [errors, setErrors] = useState({});
+
+//   const validate = () => {
+//     let newErrors = {};
+
+//     if (!username) newErrors.username = "Username is required";
+//     if (!email) newErrors.email = "Email is required";
+//     if (!password) newErrors.password = "Password is required";
+//     if (!confirmPassword) newErrors.confirmPassword = "Confirm password required";
+
+//     if (password && confirmPassword && password !== confirmPassword) {
+//       newErrors.confirmPassword = "Passwords do not match";
+//     }
+
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   const handleRegister = async () => {
+//     if (!validate()) return;
+
+//     try {
+//       const res = await fetch("http://localhost:5000/register", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           username,
+//           email,
+//           password,
+//         }),
+//       });
+
+//       const result = await res.json();
+//       console.log("REGISTER RESPONSE:", result);
+
+//       if (result.status === "success") {
+//         toast.success("Registered Successfully ✅", {
+//           onClose: () => navigate("/"),
+//         });
+//       } 
+//       else if (result.status === "exists") {
+//         toast.error("User already exists ❌");
+//       } 
+//       else if (result.status === "fail") {
+//         toast.error("Missing fields ❌");
+//       } 
+//       else {
+//         toast.error("Register failed ❌");
+//       }
+
+//     } catch (err) {
+//       console.log(err);
+//       toast.error("Server not running ❌");
+//     }
+//   };
+
+//   return (
+//     <div className="register-page">
+//       <div className="register-container">
+//         <h2>Register</h2>
+
+//         <input
+//           placeholder="Username"
+//           value={username}
+//           onChange={(e) => setUsername(e.target.value)}
+//         />
+//         {errors.username && <p style={{ color: "red" }}>{errors.username}</p>}
+
+//         <input
+//           placeholder="Email"
+//           value={email}
+//           onChange={(e) => setEmail(e.target.value)}
+//         />
+//         {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+
+//         <input
+//           type="password"
+//           placeholder="Password"
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//         />
+//         {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+
+//         <input
+//           type="password"
+//           placeholder="Confirm Password"
+//           value={confirmPassword}
+//           onChange={(e) => setConfirmPassword(e.target.value)}
+//         />
+//         {errors.confirmPassword && (
+//           <p style={{ color: "red" }}>{errors.confirmPassword}</p>
+//         )}
+
+//         <button onClick={handleRegister}>Register</button>
+
+//         <p onClick={() => navigate("/")}>Already user? Login</p>
+
+//         <ToastContainer />
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Register;
+
+
+
+
+
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -31,14 +322,11 @@ function Register() {
 
     if (!password) {
       newErrors.password = "Password is required";
-    } 
-    else if (password.length < 5) {
+    } else if (password.length < 5) {
       newErrors.password = "Min 5 characters required";
-    } 
-    else if (!/[!@#$%^&*]/.test(password)) {
+    } else if (!/[!@#$%^&*]/.test(password)) {
       newErrors.password = "Must include 1 special character";
-    } 
-    else if ((password.match(/[0-9]/g) || []).length < 3) {
+    } else if ((password.match(/[0-9]/g) || []).length < 3) {
       newErrors.password = "Must include at least 3 numbers";
     }
 
@@ -69,15 +357,26 @@ function Register() {
       });
 
       const result = await res.json();
+      console.log("REGISTER RESPONSE:", result);
 
-      if (result.status === "saved") {
+      // ✅ FIXED BACKEND STATUS CHECK
+      if (result.status === "success") {
         toast.success("Registered Successfully ✅", {
           onClose: () => navigate("/"),
         });
-      } else {
+      } 
+      else if (result.status === "exists") {
+        toast.error("User already exists ❌");
+      } 
+      else if (result.status === "fail") {
+        toast.error(result.msg || "Missing fields ❌");
+      } 
+      else {
         toast.error("Register failed ❌");
       }
+
     } catch (err) {
+      console.log(err);
       toast.error("Server error ❌");
     }
   };
@@ -92,22 +391,14 @@ function Register() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        {errors.username && (
-          <p style={{ color: "red", fontSize: "12px" }}>
-            {errors.username}
-          </p>
-        )}
+        {errors.username && <p style={{ color: "red", fontSize: "12px" }}>{errors.username}</p>}
 
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        {errors.email && (
-          <p style={{ color: "red", fontSize: "12px" }}>
-            {errors.email}
-          </p>
-        )}
+        {errors.email && <p style={{ color: "red", fontSize: "12px" }}>{errors.email}</p>}
 
         <input
           type="password"
@@ -115,11 +406,7 @@ function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {errors.password && (
-          <p style={{ color: "red", fontSize: "12px" }}>
-            {errors.password}
-          </p>
-        )}
+        {errors.password && <p style={{ color: "red", fontSize: "12px" }}>{errors.password}</p>}
 
         <input
           type="password"
@@ -127,11 +414,7 @@ function Register() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-        {errors.confirmPassword && (
-          <p style={{ color: "red", fontSize: "12px" }}>
-            {errors.confirmPassword}
-          </p>
-        )}
+        {errors.confirmPassword && <p style={{ color: "red", fontSize: "12px" }}>{errors.confirmPassword}</p>}
 
         <button onClick={handleRegister}>Register</button>
 

@@ -135,8 +135,394 @@
 
 
 
+// import React, { useEffect, useState } from "react";
+// // import axios from "axios";
+// import "./Users.css";
+
+// function UsersPage() {
+//   const [users, setUsers] = useState([]);
+//   const [search, setSearch] = useState("");
+//   const [selectedUser, setSelectedUser] = useState(null);
+//   const [currentPage, setCurrentPage] = useState(1);
+
+//   const USERS_PER_PAGE = 5;
+
+//   useEffect(() => {
+//     loadUsers();
+//   }, []);
+
+//   // 🔄 Get all users
+//   const loadUsers = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:5001/users");
+//       setUsers(res.data);
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   };
+
+//   // 👁 View user
+//   const viewUser = (user) => {
+//     setSelectedUser(user);
+//   };
+
+//   const closeModal = () => {
+//     setSelectedUser(null);
+//   };
+
+//   // 🚫 Block / Unblock
+//   const toggleStatus = async (user) => {
+//     const confirm = window.confirm(
+//       `Do you want to ${user.status === "Active" ? "Block" : "Unblock"} this user?`
+//     );
+//     if (!confirm) return;
+
+//     try {
+//       await axios.put(`http://localhost:5001/users/${user._id}/status`, {
+//         status: user.status === "Active" ? "Blocked" : "Active",
+//       });
+//       loadUsers();
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   };
+
+//   // 🗑 Delete user
+//   const deleteUser = async (id) => {
+//     const confirmDelete = window.confirm("Are you sure to delete this user?");
+//     if (!confirmDelete) return;
+
+//     try {
+//       await axios.delete(`http://localhost:5001/users/${id}`);
+//       loadUsers();
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   };
+
+//   // 🔍 Search filter
+//   const filteredUsers = users.filter((u) =>
+//     u.name.toLowerCase().includes(search.toLowerCase()) ||
+//     u.email.toLowerCase().includes(search.toLowerCase())
+//   );
+
+//   // 📄 Pagination logic
+//   const indexOfLast = currentPage * USERS_PER_PAGE;
+//   const indexOfFirst = indexOfLast - USERS_PER_PAGE;
+//   const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
+
+//   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
+//   return (
+//     <div className="users-page">
+//       <h2>👥 Users Management</h2>
+
+//       {/* Search */}
+//       <input
+//         type="text"
+//         placeholder="Search users..."
+//         value={search}
+//         onChange={(e) => setSearch(e.target.value)}
+//         className="search"
+//       />
+
+//       {/* Table */}
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Name</th>
+//             <th>Email</th>
+//             <th>Role</th>
+//             <th>Status</th>
+//             <th>Last Login</th>
+//             <th>Actions</th>
+//           </tr>
+//         </thead>
+
+//         <tbody>
+//           {currentUsers.map((user) => (
+//             <tr key={user._id}>
+//               <td>{user.name}</td>
+//               <td>{user.email}</td>
+//               <td>{user.role}</td>
+
+//               <td className={user.status === "Active" ? "active" : "blocked"}>
+//                 {user.status}
+//               </td>
+
+//               <td>{user.lastLogin}</td>
+
+//               <td>
+//                 <button onClick={() => viewUser(user)}>View</button>
+
+//                 <button onClick={() => toggleStatus(user)}>
+//                   {user.status === "Active" ? "Block" : "Unblock"}
+//                 </button>
+
+//                 <button className="delete" onClick={() => deleteUser(user._id)}>
+//                   Delete
+//                 </button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+
+//       {/* Pagination */}
+//       <div className="pagination">
+//         {Array.from({ length: totalPages }, (_, i) => (
+//           <button
+//             key={i}
+//             className={currentPage === i + 1 ? "activePage" : ""}
+//             onClick={() => setCurrentPage(i + 1)}
+//           >
+//             {i + 1}
+//           </button>
+//         ))}
+//       </div>
+
+//       {/* Modal */}
+//       {selectedUser && (
+//         <div className="modal">
+//           <div className="modalBox">
+//             <h3>User Details</h3>
+
+//             <p><b>Name:</b> {selectedUser.name}</p>
+//             <p><b>Email:</b> {selectedUser.email}</p>
+//             <p><b>Role:</b> {selectedUser.role}</p>
+//             <p><b>Status:</b> {selectedUser.status}</p>
+//             <p><b>Last Login:</b> {selectedUser.lastLogin}</p>
+
+//             <button onClick={closeModal}>Close</button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default UsersPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useEffect, useState } from "react";
+// import axios from "axios"; // ✅ FIXED: axios import சேர்த்தோம்
+// import "./Users.css";
+
+// function UsersPage() {
+//   const [users, setUsers] = useState([]);
+//   const [search, setSearch] = useState("");
+//   const [selectedUser, setSelectedUser] = useState(null);
+//   const [currentPage, setCurrentPage] = useState(1);
+
+//   const USERS_PER_PAGE = 5;
+
+//   useEffect(() => {
+//     loadUsers();
+//   }, []);
+
+//   // 🔄 Get all users
+//   const loadUsers = async () => {
+//     try {
+//       const res = await axios.get("http://localhost:5000/users");
+//       setUsers(res.data || []);
+//     } catch (err) {
+//       console.error("Error loading users:", err);
+//     }
+//   };
+
+//   // 👁 View user
+//   const viewUser = (user) => {
+//     setSelectedUser(user);
+//   };
+
+//   const closeModal = () => {
+//     setSelectedUser(null);
+//   };
+
+//   // 🚫 Block / Unblock
+//   const toggleStatus = async (user) => {
+//     const action = user.status === "Active" ? "Block" : "Unblock";
+
+//     if (!window.confirm(`Do you want to ${action} this user?`)) return;
+
+//     try {
+//       await axios.put(
+//         `http://localhost:5000/users/${user._id}/status`,
+//         {
+//           status: user.status === "Active" ? "Blocked" : "Active",
+//         }
+//       );
+
+//       loadUsers();
+//     } catch (err) {
+//       console.error("Error updating status:", err);
+//     }
+//   };
+
+//   // 🗑 Delete user
+//   const deleteUser = async (id) => {
+//     if (!window.confirm("Are you sure to delete this user?")) return;
+
+//     try {
+//       await axios.delete(`http://localhost:5000/users/${id}`);
+//       loadUsers();
+//     } catch (err) {
+//       console.error("Error deleting user:", err);
+//     }
+//   };
+
+//   // 🔍 Search filter (safe check added)
+//   const filteredUsers = users.filter((u) => {
+//     const name = u.name?.toLowerCase() || "";
+//     const email = u.email?.toLowerCase() || "";
+//     const keyword = search.toLowerCase();
+
+//     return name.includes(keyword) || email.includes(keyword);
+//   });
+
+//   // 📄 Pagination logic
+//   const indexOfLast = currentPage * USERS_PER_PAGE;
+//   const indexOfFirst = indexOfLast - USERS_PER_PAGE;
+//   const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
+
+//   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
+//   return (
+//     <div className="users-page">
+//       <h2>👥 Users Management</h2>
+
+//       {/* Search */}
+//       <input
+//         type="text"
+//         placeholder="Search users..."
+//         value={search}
+//         onChange={(e) => {
+//           setSearch(e.target.value);
+//           setCurrentPage(1); // ✅ search போது page reset
+//         }}
+//         className="search"
+//       />
+
+//       {/* Table */}
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Name</th>
+//             <th>Email</th>
+//             <th>Role</th>
+//             <th>Status</th>
+//             <th>Last Login</th>
+//             <th>Actions</th>
+//           </tr>
+//         </thead>
+
+//         <tbody>
+//           {currentUsers.length > 0 ? (
+//             currentUsers.map((user) => (
+//               <tr key={user._id}>
+//                 <td>{user.name}</td>
+//                 <td>{user.email}</td>
+//                 <td>{user.role}</td>
+
+//                 <td className={user.status === "Active" ? "active" : "blocked"}>
+//                   {user.status}
+//                 </td>
+
+//                 <td>{user.lastLogin || "-"}</td>
+
+//                 <td>
+//                   <button onClick={() => viewUser(user)}>View</button>
+
+//                   <button onClick={() => toggleStatus(user)}>
+//                     {user.status === "Active" ? "Block" : "Unblock"}
+//                   </button>
+
+//                   <button className="delete" onClick={() => deleteUser(user._id)}>
+//                     Delete
+//                   </button>
+//                 </td>
+//               </tr>
+//             ))
+//           ) : (
+//             <tr>
+//               <td colSpan="6">No users found</td>
+//             </tr>
+//           )}
+//         </tbody>
+//       </table>
+
+//       {/* Pagination */}
+//       <div className="pagination">
+//         {Array.from({ length: totalPages }, (_, i) => (
+//           <button
+//             key={i}
+//             className={currentPage === i + 1 ? "activePage" : ""}
+//             onClick={() => setCurrentPage(i + 1)}
+//           >
+//             {i + 1}
+//           </button>
+//         ))}
+//       </div>
+
+//       {/* Modal */}
+//       {selectedUser && (
+//         <div className="modal">
+//           <div className="modalBox">
+//             <h3>User Details</h3>
+
+//             <p><b>Name:</b> {selectedUser.name}</p>
+//             <p><b>Email:</b> {selectedUser.email}</p>
+//             <p><b>Role:</b> {selectedUser.role}</p>
+//             <p><b>Status:</b> {selectedUser.status}</p>
+//             <p><b>Last Login:</b> {selectedUser.lastLogin || "-"}</p>
+
+//             <button onClick={closeModal}>Close</button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default UsersPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useState } from "react";
-// import axios from "axios";
+import axios from "axios";
 import "./Users.css";
 
 function UsersPage() {
@@ -144,6 +530,7 @@ function UsersPage() {
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("basic"); // ⭐ NEW
 
   const USERS_PER_PAGE = 5;
 
@@ -151,62 +538,59 @@ function UsersPage() {
     loadUsers();
   }, []);
 
-  // 🔄 Get all users
   const loadUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5001/users");
-      setUsers(res.data);
+      const res = await axios.get("http://localhost:5000/users");
+      setUsers(res.data || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
-  // 👁 View user
   const viewUser = (user) => {
     setSelectedUser(user);
+    setActiveTab("basic"); // reset tab ⭐
   };
 
   const closeModal = () => {
     setSelectedUser(null);
   };
 
-  // 🚫 Block / Unblock
   const toggleStatus = async (user) => {
-    const confirm = window.confirm(
-      `Do you want to ${user.status === "Active" ? "Block" : "Unblock"} this user?`
-    );
-    if (!confirm) return;
+    const action = user.status === "Active" ? "Block" : "Unblock";
+
+    if (!window.confirm(`${action} user?`)) return;
 
     try {
-      await axios.put(`http://localhost:5001/users/${user._id}/status`, {
-        status: user.status === "Active" ? "Blocked" : "Active",
-      });
+      await axios.put(
+        `http://localhost:5000/users/${user._id}/status`,
+        { status: user.status === "Active" ? "Blocked" : "Active" }
+      );
       loadUsers();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
-  // 🗑 Delete user
   const deleteUser = async (id) => {
-    const confirmDelete = window.confirm("Are you sure to delete this user?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Delete user?")) return;
 
     try {
-      await axios.delete(`http://localhost:5001/users/${id}`);
+      await axios.delete(`http://localhost:5000/users/${id}`);
       loadUsers();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
-  // 🔍 Search filter
-  const filteredUsers = users.filter((u) =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const keyword = search.toLowerCase();
+    return (
+      u.name?.toLowerCase().includes(keyword) ||
+      u.email?.toLowerCase().includes(keyword)
+    );
+  });
 
-  // 📄 Pagination logic
   const indexOfLast = currentPage * USERS_PER_PAGE;
   const indexOfFirst = indexOfLast - USERS_PER_PAGE;
   const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
@@ -219,23 +603,21 @@ function UsersPage() {
 
       {/* Search */}
       <input
-        type="text"
         placeholder="Search users..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setCurrentPage(1);
+        }}
         className="search"
       />
 
-      {/* Table */}
+      {/* TABLE */}
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Last Login</th>
-            <th>Actions</th>
+            <th>Name</th><th>Email</th><th>Role</th>
+            <th>Status</th><th>Last Login</th><th>Actions</th>
           </tr>
         </thead>
 
@@ -245,23 +627,15 @@ function UsersPage() {
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.role}</td>
-
-              <td className={user.status === "Active" ? "active" : "blocked"}>
-                {user.status}
-              </td>
-
-              <td>{user.lastLogin}</td>
+              <td>{user.status}</td>
+              <td>{user.lastLogin || "-"}</td>
 
               <td>
                 <button onClick={() => viewUser(user)}>View</button>
-
                 <button onClick={() => toggleStatus(user)}>
                   {user.status === "Active" ? "Block" : "Unblock"}
                 </button>
-
-                <button className="delete" onClick={() => deleteUser(user._id)}>
-                  Delete
-                </button>
+                <button onClick={() => deleteUser(user._id)}>Delete</button>
               </td>
             </tr>
           ))}
@@ -281,17 +655,69 @@ function UsersPage() {
         ))}
       </div>
 
-      {/* Modal */}
+      {/* ================= MODAL ================= */}
       {selectedUser && (
         <div className="modal">
           <div className="modalBox">
-            <h3>User Details</h3>
 
-            <p><b>Name:</b> {selectedUser.name}</p>
-            <p><b>Email:</b> {selectedUser.email}</p>
-            <p><b>Role:</b> {selectedUser.role}</p>
-            <p><b>Status:</b> {selectedUser.status}</p>
-            <p><b>Last Login:</b> {selectedUser.lastLogin}</p>
+            <h3>User Profile</h3>
+
+            {/* Tabs */}
+            <div className="tabs">
+              <button onClick={() => setActiveTab("basic")}>Basic</button>
+              <button onClick={() => setActiveTab("activity")}>Activity</button>
+              <button onClick={() => setActiveTab("login")}>Login</button>
+              <button onClick={() => setActiveTab("reports")}>Reports</button>
+            </div>
+
+            {/* BASIC */}
+            {activeTab === "basic" && (
+              <>
+                <p><b>Name:</b> {selectedUser.name}</p>
+                <p><b>Email:</b> {selectedUser.email}</p>
+                <p><b>Role:</b> {selectedUser.role}</p>
+                <p><b>Status:</b> {selectedUser.status}</p>
+              </>
+            )}
+
+            {/* ACTIVITY */}
+            {activeTab === "activity" && (
+              <div>
+                {selectedUser.activityHistory?.length ? (
+                  selectedUser.activityHistory.map((a, i) => (
+                    <p key={i}>📌 {a.action} - {a.time}</p>
+                  ))
+                ) : (
+                  <p>No activity</p>
+                )}
+              </div>
+            )}
+
+            {/* LOGIN */}
+            {activeTab === "login" && (
+              <div>
+                {selectedUser.loginHistory?.length ? (
+                  selectedUser.loginHistory.map((l, i) => (
+                    <p key={i}>🔐 {l.ip} - {l.time}</p>
+                  ))
+                ) : (
+                  <p>No login history</p>
+                )}
+              </div>
+            )}
+
+            {/* REPORTS */}
+            {activeTab === "reports" && (
+              <div>
+                {selectedUser.reports?.length ? (
+                  selectedUser.reports.map((r, i) => (
+                    <p key={i}>📊 {r.title} - {r.score}</p>
+                  ))
+                ) : (
+                  <p>No reports</p>
+                )}
+              </div>
+            )}
 
             <button onClick={closeModal}>Close</button>
           </div>
