@@ -437,6 +437,676 @@
 
 
 
+// import React, { useState, useEffect, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import "./Training.css";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+// function Training() {
+//   const navigate = useNavigate();
+
+//   // ✅ SAFE USER FETCH
+//   const user = JSON.parse(localStorage.getItem("user") || "{}");
+//   const userId = user?.id;
+
+//   const targetText =
+//     "The quick fox jumps over the lazy dog while typing continuously with different speeds using shift keys, numbers like 12345, and symbols like @#&* to capture accurate keystroke timing and mouse movements.";
+
+//   const [input, setInput] = useState("");
+//   const [keystrokes, setKeystrokes] = useState([]);
+//   const [mouseData, setMouseData] = useState([]);
+//   const [time, setTime] = useState(150);
+//   const [isTyping, setIsTyping] = useState(false);
+//   const [isCompleted, setIsCompleted] = useState(false);
+
+//   const keyDownTimes = useRef({});
+//   const lastKeyTime = useRef(null);
+
+//   // 🔐 USER CHECK
+//   useEffect(() => {
+//     console.log("USER:", user);
+//     console.log("USER ID:", userId);
+
+//     if (!userId) {
+//       navigate("/");
+//     }
+//   }, [userId, navigate]);
+
+//   // ⏱ TIMER
+//   useEffect(() => {
+//     let timer;
+//     if (isTyping && time > 0) {
+//       timer = setInterval(() => {
+//         setTime((t) => t - 1);
+//       }, 1000);
+//     }
+//     return () => clearInterval(timer);
+//   }, [isTyping, time]);
+
+//   const handleKeyDown = (e) => {
+//     const now = Date.now();
+//     keyDownTimes.current[e.key] = now;
+
+//     const delay = lastKeyTime.current ? now - lastKeyTime.current : 0;
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "down", time: now, delayFromLastKey: delay },
+//     ]);
+
+//     lastKeyTime.current = now;
+//   };
+
+//   const handleKeyUp = (e) => {
+//     const now = Date.now();
+//     const holdTime = now - (keyDownTimes.current[e.key] || now);
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "up", time: now, holdTime },
+//     ]);
+//   };
+
+//   const handleChange = (e) => {
+//     setInput(e.target.value);
+//     if (!isTyping) setIsTyping(true);
+//   };
+
+//   // 🖱 MOUSE TRACK
+//   useEffect(() => {
+//     const move = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "move", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     const click = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "click", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     window.addEventListener("mousemove", move);
+//     window.addEventListener("click", click);
+
+//     return () => {
+//       window.removeEventListener("mousemove", move);
+//       window.removeEventListener("click", click);
+//     };
+//   }, []);
+
+//   const words = input.trim().split(/\s+/).filter(Boolean).length;
+//   const characters = input.length;
+
+//   const minutes = Math.floor(time / 60);
+//   const seconds = time % 60;
+
+//   // 🚀 SUBMIT
+//   const handleSubmit = async () => {
+//     if (!input.trim()) {
+//       toast.warning("⚠️ Please start typing!");
+//       return;
+//     }
+
+//     try {
+//       // ✅ SAVE DATA
+//       await fetch("http://localhost:5000/training-data", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           userId,
+//           typedText: input,
+//           keystrokes,
+//           mouseData,
+//         }),
+//       });
+
+//       // ✅ UPDATE DB
+//       await fetch("http://localhost:5000/complete-training", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ userId }),
+//       });
+
+//       // ✅ IMPORTANT: localStorage update (THIS FIXES YOUR ISSUE)
+//       localStorage.setItem("trainingCompleted", "true");
+
+//       toast.success("✅ Training Completed!");
+
+//       setIsCompleted(true);
+
+//       setTimeout(() => {
+//         navigate("/app/dashboard");
+//       }, 1000);
+
+//     } catch (err) {
+//       console.log(err);
+//       toast.error("❌ Server error!");
+//     }
+//   };
+
+//   const handlePaste = (e) => {
+//     e.preventDefault();
+//     toast.error("❌ Paste not allowed!");
+//   };
+
+//   // ✅ COMPLETED SCREEN
+//   if (isCompleted) {
+//     return (
+//       <div className="training-page disabled-mode">
+//         <h2>🚫 Training Completed</h2>
+//         <p>Redirecting to Dashboard...</p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="training-page">
+//       <h2>Keystroke Training</h2>
+
+//       <h1 className="timer">
+//         {String(minutes).padStart(2, "0")}:
+//         {String(seconds).padStart(2, "0")}
+//       </h1>
+
+//       <p className="sentence">{targetText}</p>
+
+//       <textarea
+//         value={input}
+//         placeholder="Start typing the given sentence here..."
+//         onChange={handleChange}
+//         onKeyDown={handleKeyDown}
+//         onKeyUp={handleKeyUp}
+//         onPaste={handlePaste}
+//         disabled={time === 0 || isCompleted}
+//       />
+
+//       <div className="stats">
+//         <span>Words: {words}</span>
+//         <span>Characters: {characters}</span>
+//       </div>
+
+//       <button
+//         className="submit"
+//         onClick={handleSubmit}
+//         disabled={isCompleted}
+//       >
+//         Submit Data
+//       </button>
+
+//       <ToastContainer />
+//     </div>
+//   );
+// }
+
+// export default Training;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import "./Training.css";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+// function Training() {
+//   const navigate = useNavigate();
+
+//   const user = JSON.parse(localStorage.getItem("user") || "{}");
+//   const userId = user?.id;
+
+//   const targetText =
+//     "The quick fox jumps over the lazy dog while typing continuously with different speeds using shift keys, numbers like 12345, and symbols like @#&* to capture accurate keystroke timing and mouse movements.";
+
+//   const [input, setInput] = useState("");
+//   const [keystrokes, setKeystrokes] = useState([]);
+//   const [mouseData, setMouseData] = useState([]);
+//   const [time, setTime] = useState(150);
+//   const [isTyping, setIsTyping] = useState(false);
+//   const [isCompleted, setIsCompleted] = useState(false);
+
+//   const keyDownTimes = useRef({});
+//   const lastKeyTime = useRef(null);
+
+//   // 🔐 USER CHECK
+//   useEffect(() => {
+//     if (!userId) {
+//       navigate("/");
+//     }
+//   }, [userId, navigate]);
+
+//   // ⏱ TIMER
+//   useEffect(() => {
+//     let timer;
+//     if (isTyping && time > 0) {
+//       timer = setInterval(() => {
+//         setTime((t) => t - 1);
+//       }, 1000);
+//     }
+//     return () => clearInterval(timer);
+//   }, [isTyping, time]);
+
+//   const handleKeyDown = (e) => {
+//     const now = Date.now();
+//     keyDownTimes.current[e.key] = now;
+
+//     const delay = lastKeyTime.current ? now - lastKeyTime.current : 0;
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "down", time: now, delayFromLastKey: delay },
+//     ]);
+
+//     lastKeyTime.current = now;
+//   };
+
+//   const handleKeyUp = (e) => {
+//     const now = Date.now();
+//     const holdTime = now - (keyDownTimes.current[e.key] || now);
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "up", time: now, holdTime },
+//     ]);
+//   };
+
+//   const handleChange = (e) => {
+//     setInput(e.target.value);
+//     if (!isTyping) setIsTyping(true);
+//   };
+
+//   // 🖱 MOUSE TRACK
+//   useEffect(() => {
+//     const move = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "move", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     const click = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "click", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     window.addEventListener("mousemove", move);
+//     window.addEventListener("click", click);
+
+//     return () => {
+//       window.removeEventListener("mousemove", move);
+//       window.removeEventListener("click", click);
+//     };
+//   }, []);
+
+//   const handleSubmit = async () => {
+//     if (!input.trim()) {
+//       toast.warning("⚠️ Please start typing!");
+//       return;
+//     }
+
+//     try {
+//       // 🚀 ONLY SEND TO MODULE 2 (NOT DB)
+//       const response = await fetch(
+//         "http://127.0.0.1:5000/api/behavior/receive",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             // userId,
+//             userId: user?.username || userId,   // 👈 NAME ADDED SAFELY
+//             typedText: input,
+//             keystrokes,
+//             mouseData,
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+
+//       console.log("Module 2 Response:", result);
+
+//       toast.success("✅ Data sent to AI pipeline!");
+
+//       setIsCompleted(true);
+
+//       setTimeout(() => {
+//         navigate("/app/dashboard");
+//       }, 1000);
+//     } catch (err) {
+//       console.log(err);
+//       toast.error("❌ Server error!");
+//     }
+//   };
+
+//   const handlePaste = (e) => {
+//     e.preventDefault();
+//     toast.error("❌ Paste not allowed!");
+//   };
+
+//   if (isCompleted) {
+//     return (
+//       <div className="training-page disabled-mode">
+//         <h2>🚫 Training Completed</h2>
+//         <p>Processing via AI Pipeline...</p>
+//       </div>
+//     );
+//   }
+
+//   const words = input.trim().split(/\s+/).filter(Boolean).length;
+//   const characters = input.length;
+
+//   const minutes = Math.floor(time / 60);
+//   const seconds = time % 60;
+
+//   return (
+//     <div className="training-page">
+//       <h2>Keystroke Training (AI Pipeline)</h2>
+
+//       <h1 className="timer">
+//         {String(minutes).padStart(2, "0")}:
+//         {String(seconds).padStart(2, "0")}
+//       </h1>
+
+//       <p className="sentence">{targetText}</p>
+
+//       <textarea
+//         value={input}
+//         placeholder="Start typing..."
+//         onChange={handleChange}
+//         onKeyDown={handleKeyDown}
+//         onKeyUp={handleKeyUp}
+//         onPaste={handlePaste}
+//         disabled={time === 0 || isCompleted}
+//       />
+
+//       <div className="stats">
+//         <span>Words: {words}</span>
+//         <span>Characters: {characters}</span>
+//       </div>
+
+//       <button className="submit" onClick={handleSubmit}>
+//         Submit to AI Pipeline
+//       </button>
+
+//       <ToastContainer />
+//     </div>
+//   );
+// }
+
+// export default Training;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import "./Training.css";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+// function Training() {
+//   const navigate = useNavigate();
+
+//   // ✅ FIX: safe parsing
+//   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+//   // ✅ FIX: fallback support (id or username)
+//   const userId = user?.id || user?.username;
+
+//   const targetText =
+//     "The quick fox jumps over the lazy dog while typing continuously with different speeds using shift keys, numbers like 12345, and symbols like @#&* to capture accurate keystroke timing and mouse movements.";
+
+//   const [input, setInput] = useState("");
+//   const [keystrokes, setKeystrokes] = useState([]);
+//   const [mouseData, setMouseData] = useState([]);
+//   const [time, setTime] = useState(150);
+//   const [isTyping, setIsTyping] = useState(false);
+//   const [isCompleted, setIsCompleted] = useState(false);
+
+//   const keyDownTimes = useRef({});
+//   const lastKeyTime = useRef(null);
+
+//   // 🔐 USER CHECK
+//   useEffect(() => {
+//     if (!userId) {
+//       navigate("/");
+//     }
+//   }, [userId, navigate]);
+
+//   // ⏱ TIMER
+//   useEffect(() => {
+//     let timer;
+//     if (isTyping && time > 0) {
+//       timer = setInterval(() => {
+//         setTime((t) => t - 1);
+//       }, 1000);
+//     }
+//     return () => clearInterval(timer);
+//   }, [isTyping, time]);
+
+//   const handleKeyDown = (e) => {
+//     const now = Date.now();
+//     keyDownTimes.current[e.key] = now;
+
+//     const delay = lastKeyTime.current ? now - lastKeyTime.current : 0;
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "down", time: now, delayFromLastKey: delay },
+//     ]);
+
+//     lastKeyTime.current = now;
+//   };
+
+//   const handleKeyUp = (e) => {
+//     const now = Date.now();
+//     const holdTime = now - (keyDownTimes.current[e.key] || now);
+
+//     setKeystrokes((prev) => [
+//       ...prev,
+//       { key: e.key, type: "up", time: now, holdTime },
+//     ]);
+//   };
+
+//   const handleChange = (e) => {
+//     setInput(e.target.value);
+//     if (!isTyping) setIsTyping(true);
+//   };
+
+//   // 🖱 MOUSE TRACK
+//   useEffect(() => {
+//     const move = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "move", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     const click = (e) =>
+//       setMouseData((prev) => [
+//         ...prev,
+//         { type: "click", x: e.clientX, y: e.clientY, time: Date.now() },
+//       ]);
+
+//     window.addEventListener("mousemove", move);
+//     window.addEventListener("click", click);
+
+//     return () => {
+//       window.removeEventListener("mousemove", move);
+//       window.removeEventListener("click", click);
+//     };
+//   }, []);
+
+//   const handleSubmit = async () => {
+//     if (!input.trim()) {
+//       toast.warning("⚠️ Please start typing!");
+//       return;
+//     }
+
+//     try {
+//       const response = await fetch(
+//         "http://127.0.0.1:5000/api/behavior/receive",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             userId: userId, // ✅ FIXED SAFE VALUE
+//             typedText: input,
+//             keystrokes,
+//             mouseData,
+//           }),
+//         }
+//       );
+
+//       const result = await response.json();
+
+//       console.log("Module 2 Response:", result);
+
+//       toast.success("✅ Data sent to AI pipeline!");
+
+//       setIsCompleted(true);
+
+//       setTimeout(() => {
+//         navigate("/app/dashboard");
+//       }, 1000);
+//     } catch (err) {
+//       console.log(err);
+//       toast.error("❌ Server error!");
+//     }
+//   };
+
+//   const handlePaste = (e) => {
+//     e.preventDefault();
+//     toast.error("❌ Paste not allowed!");
+//   };
+
+//   if (isCompleted) {
+//     return (
+//       <div className="training-page disabled-mode">
+//         <h2>🚫 Training Completed</h2>
+//         <p>Processing via AI Pipeline...</p>
+//       </div>
+//     );
+//   }
+
+//   const words = input.trim().split(/\s+/).filter(Boolean).length;
+//   const characters = input.length;
+
+//   const minutes = Math.floor(time / 60);
+//   const seconds = time % 60;
+
+//   return (
+//     <div className="training-page">
+//       <h2>Keystroke Training (AI Pipeline)</h2>
+
+//       <h1 className="timer">
+//         {String(minutes).padStart(2, "0")}:
+//         {String(seconds).padStart(2, "0")}
+//       </h1>
+
+//       <p className="sentence">{targetText}</p>
+
+//       <textarea
+//         value={input}
+//         placeholder="Start typing..."
+//         onChange={handleChange}
+//         onKeyDown={handleKeyDown}
+//         onKeyUp={handleKeyUp}
+//         onPaste={handlePaste}
+//         disabled={time === 0 || isCompleted}
+//       />
+
+//       <div className="stats">
+//         <span>Words: {words}</span>
+//         <span>Characters: {characters}</span>
+//       </div>
+
+//       <button className="submit" onClick={handleSubmit}>
+//         Submit to AI Pipeline
+//       </button>
+
+//       <ToastContainer />
+//     </div>
+//   );
+// }
+
+// export default Training;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Training.css";
@@ -446,8 +1116,10 @@ import "react-toastify/dist/ReactToastify.css";
 function Training() {
   const navigate = useNavigate();
 
-  // ✅ SAFE USER FETCH
+  // ✅ SAFE USER PARSE
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // ✅ FIX: ONLY REAL USER ID (NO FALLBACK TO USERNAME)
   const userId = user?.id;
 
   const targetText =
@@ -465,9 +1137,6 @@ function Training() {
 
   // 🔐 USER CHECK
   useEffect(() => {
-    console.log("USER:", user);
-    console.log("USER ID:", userId);
-
     if (!userId) {
       navigate("/");
     }
@@ -536,12 +1205,6 @@ function Training() {
     };
   }, []);
 
-  const words = input.trim().split(/\s+/).filter(Boolean).length;
-  const characters = input.length;
-
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-
   // 🚀 SUBMIT
   const handleSubmit = async () => {
     if (!input.trim()) {
@@ -550,40 +1213,31 @@ function Training() {
     }
 
     try {
-      // ✅ SAVE DATA
-      await fetch("http://localhost:5000/training-data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          typedText: input,
-          keystrokes,
-          mouseData,
-        }),
-      });
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/behavior/receive",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: userId, // ✅ CLEAN & CORRECT
+            typedText: input,
+            keystrokes,
+            mouseData,
+          }),
+        }
+      );
 
-      // ✅ UPDATE DB
-      await fetch("http://localhost:5000/complete-training", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId }),
-      });
+      const result = await response.json();
 
-      // ✅ IMPORTANT: localStorage update (THIS FIXES YOUR ISSUE)
-      localStorage.setItem("trainingCompleted", "true");
+      console.log("Module 2 Response:", result);
 
-      toast.success("✅ Training Completed!");
+      toast.success("✅ Data sent to AI pipeline!");
 
       setIsCompleted(true);
 
       setTimeout(() => {
         navigate("/app/dashboard");
       }, 1000);
-
     } catch (err) {
       console.log(err);
       toast.error("❌ Server error!");
@@ -595,19 +1249,24 @@ function Training() {
     toast.error("❌ Paste not allowed!");
   };
 
-  // ✅ COMPLETED SCREEN
   if (isCompleted) {
     return (
       <div className="training-page disabled-mode">
         <h2>🚫 Training Completed</h2>
-        <p>Redirecting to Dashboard...</p>
+        <p>Processing via AI Pipeline...</p>
       </div>
     );
   }
 
+  const words = input.trim().split(/\s+/).filter(Boolean).length;
+  const characters = input.length;
+
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+
   return (
     <div className="training-page">
-      <h2>Keystroke Training</h2>
+      <h2>Keystroke Training (AI Pipeline)</h2>
 
       <h1 className="timer">
         {String(minutes).padStart(2, "0")}:
@@ -618,7 +1277,7 @@ function Training() {
 
       <textarea
         value={input}
-        placeholder="Start typing the given sentence here..."
+        placeholder="Start typing..."
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
@@ -631,12 +1290,8 @@ function Training() {
         <span>Characters: {characters}</span>
       </div>
 
-      <button
-        className="submit"
-        onClick={handleSubmit}
-        disabled={isCompleted}
-      >
-        Submit Data
+      <button className="submit" onClick={handleSubmit}>
+        Submit to AI Pipeline
       </button>
 
       <ToastContainer />
@@ -645,20 +1300,3 @@ function Training() {
 }
 
 export default Training;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
