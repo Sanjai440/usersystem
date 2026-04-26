@@ -1616,7 +1616,7 @@ function Exam() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId,
+        userId: userId,
             keyData: keyRef.current,
             mouseData: mouseRef.current,
           }),
@@ -1634,7 +1634,7 @@ function Exam() {
       } catch (err) {
         console.log(err);
       }
-    }, 5000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [startExam]);

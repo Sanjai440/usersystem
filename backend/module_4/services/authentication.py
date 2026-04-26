@@ -281,30 +281,200 @@
 
 
 
+# def authenticate(user_id, current):
+#     try:
+#         print("Incoming user_id:", user_id)
+
+#         # 🔥 FETCH FROM DB
+#         data = training_collection.find_one(
+#             {"userId": user_id},
+#             sort=[("timestamp", -1)]
+#         )
+
+#         print("DB DATA:", data)
+
+#         if not data:
+#             return {"status": "NO_BASELINE"}
+
+#         # 🔥 BASELINE
+#         baseline = data.get("features", {})
+#         print("BASELINE:", baseline)
+
+#         if not baseline:
+#             return {"status": "INVALID_BASELINE"}
+
+#         # 🔥 NORMALIZE
+#         from utils.preprocess import normalize
+#         baseline = normalize(baseline)
+#         current = normalize(current)
+
+#         print("CURRENT:", current)
+
+#         # 🔥 COMPARE
+#         from services.compare_behavior import compare
+#         distance = compare(baseline, current)
+
+#         print("DISTANCE:", distance)
+
+#         # 🔥 THRESHOLD
+#         from services.threshold_engine import evaluate
+#         status = evaluate(distance)
+
+#         print("FINAL STATUS:", status)
+
+#         # 🔥 SAVE RESULT
+#         analysis_collection.insert_one({
+#             "userId": user_id,
+#             "distance": distance,
+#             "status": status
+#         })
+
+#         # 🔥 RETURN TO UI
+#         return {
+#             "status": status,
+#             "distance": distance
+#         }
+
+#     except Exception as e:
+#         print("AUTH ERROR:", e)
+#         return {
+#             "status": "ERROR",
+#             "message": str(e)
+#         }
+
+
+
+
+
+
+
+# from db import training_collection, analysis_collection
+
+
+# def authenticate(user_id, current):
+#     try:
+#         print("Incoming user_id:", user_id)
+
+#         # 🔥 FETCH FROM DB (latest record)
+#         data = training_collection.find_one(
+#             {"userId": user_id},
+#             sort=[("timestamp", -1)]
+#         )
+
+#         print("DB DATA:", data)
+
+#         if not data:
+#             return {"status": "NO_BASELINE"}
+
+#         # 🔥 BASELINE
+#         baseline = data.get("features", {})
+#         print("BASELINE:", baseline)
+
+#         if not baseline:
+#             return {"status": "INVALID_BASELINE"}
+
+#         # 🔥 NORMALIZE
+#         from utils.preprocess import normalize
+
+#         baseline = normalize(baseline)
+#         current = normalize(current)
+
+#         print("CURRENT:", current)
+
+#         # 🔥 COMPARE
+#         from services.compare_behavior import compare
+
+#         distance = compare(baseline, current)
+
+#         print("DISTANCE:", distance)
+
+#         # 🔥 THRESHOLD
+#         from services.threshold_engine import evaluate
+
+#         status = evaluate(distance)
+
+#         print("FINAL STATUS:", status)
+
+#         # 🔥 SAVE RESULT
+#         analysis_collection.insert_one({
+#             "userId": user_id,
+#             "distance": distance,
+#             "status": status
+#         })
+
+#         # 🔥 RETURN TO UI
+#         return {
+#             "status": status,
+#             "distance": distance
+#         }
+
+#     except Exception as e:
+#         print("AUTH ERROR:", e)
+#         return {
+#             "status": "ERROR",
+#             "message": str(e)
+#         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from db import training_collection, analysis_collection
+
+
 def authenticate(user_id, current):
     try:
         print("Incoming user_id:", user_id)
 
-        # 🔥 FETCH FROM DB
+        # 🔥 FIX: support both formats safely
         data = training_collection.find_one(
-            {"userId": user_id},
+            {
+                "$or": [
+                    {"user_id": user_id},
+                    {"userId": user_id}
+                ]
+            },
             sort=[("timestamp", -1)]
         )
 
         print("DB DATA:", data)
 
+        # ❌ NO DATA CASE (IMPORTANT FIX)
         if not data:
-            return {"status": "NO_BASELINE"}
+            print("⚠️ No training data found")
+            return {
+                "status": "NO_BASELINE",
+                "message": "Training data not found for this user"
+            }
 
         # 🔥 BASELINE
         baseline = data.get("features", {})
         print("BASELINE:", baseline)
 
         if not baseline:
-            return {"status": "INVALID_BASELINE"}
+            return {
+                "status": "INVALID_BASELINE",
+                "message": "Features missing in DB"
+            }
 
         # 🔥 NORMALIZE
         from utils.preprocess import normalize
+
         baseline = normalize(baseline)
         current = normalize(current)
 
@@ -312,24 +482,26 @@ def authenticate(user_id, current):
 
         # 🔥 COMPARE
         from services.compare_behavior import compare
+
         distance = compare(baseline, current)
 
         print("DISTANCE:", distance)
 
         # 🔥 THRESHOLD
         from services.threshold_engine import evaluate
+
         status = evaluate(distance)
 
         print("FINAL STATUS:", status)
 
         # 🔥 SAVE RESULT
         analysis_collection.insert_one({
-            "userId": user_id,
+            "user_id": user_id,
             "distance": distance,
             "status": status
         })
 
-        # 🔥 RETURN TO UI
+        # 🔥 RESPONSE
         return {
             "status": status,
             "distance": distance
