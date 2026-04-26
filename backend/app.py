@@ -2215,6 +2215,844 @@
 
 
 
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from pymongo import MongoClient
+# import bcrypt
+# from bson import ObjectId
+# from datetime import datetime
+
+# # ================= FIX: PATH HANDLING =================
+# import sys
+# import os
+
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# # ================= MODULE 3 IMPORTS (FIXED) =================
+# from module_3.routes.behavior_routes import behavior_bp
+# from module_3.routes.fraud_routes import fraud_bp
+# from module_3.routes.ai_routes import ai_bp
+
+# from module_3.services.fraud_detection import detect_fraud
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # ================= DB =================
+# # ================= DB =================
+# client = MongoClient("mongodb://localhost:27017/")
+# db = client["keystrokeAI_DB"]   # ← NEW DATABASE NAME
+
+# users_collection = db["users"]
+# training_collection = db["training_data"]
+# analysis_collection = db["analysis_results"]
+
+# # ================= REGISTER BLUEPRINTS =================
+# app.register_blueprint(behavior_bp, url_prefix="/api/behavior")
+# app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
+# app.register_blueprint(ai_bp, url_prefix="/api/ai")
+
+
+# # ================= REGISTER =================
+# @app.route('/register', methods=['POST'])
+# def register():
+#     try:
+#         data = request.get_json()
+#         if not data:
+#             return jsonify({"status": "fail"})
+
+#         username = data.get("username")
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         if not username or not email or not password:
+#             return jsonify({"status": "fail"})
+
+#         existing = users_collection.find_one({
+#             "$or": [{"username": username}, {"email": email}]
+#         })
+
+#         if existing:
+#             return jsonify({"status": "exists"})
+
+#         hashed_password = bcrypt.hashpw(
+#             password.encode("utf-8"),
+#             bcrypt.gensalt()
+#         ).decode("utf-8")
+
+#         users_collection.insert_one({
+#             "username": username,
+#             "email": email,
+#             "password": hashed_password,
+#             "trainingCompleted": False,
+#             "examCompleted": False
+#         })
+
+#         return jsonify({"status": "success"})
+
+#     except Exception as e:
+#         print("REGISTER ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= LOGIN =================
+# @app.route('/login', methods=['POST'])
+# def login():
+#     try:
+#         data = request.get_json()
+#         if not data:
+#             return jsonify({"status": "fail"})
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         user = users_collection.find_one({"username": username})
+
+#         if not user:
+#             return jsonify({"status": "not_registered"})
+
+#         stored_password = user.get("password")
+
+#         if isinstance(stored_password, str):
+#             stored_password = stored_password.encode("utf-8")
+
+#         if not bcrypt.checkpw(password.encode("utf-8"), stored_password):
+#             return jsonify({"status": "wrong_password"})
+
+#         return jsonify({
+#             "status": "success",
+#             "userId": str(user["_id"]),
+#             "username": user["username"],
+#             "email": user["email"]
+#         })
+
+#     except Exception as e:
+#         print("LOGIN ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= FORGOT PASSWORD =================
+# @app.route('/forgot-password', methods=['POST'])
+# def forgot_password():
+#     try:
+#         data = request.get_json()
+
+#         email = data.get("email")
+#         new_password = data.get("newPassword")
+
+#         user = users_collection.find_one({"email": email})
+
+#         if not user:
+#             return jsonify({"status": "not_found"})
+
+#         hashed_password = bcrypt.hashpw(
+#             new_password.encode("utf-8"),
+#             bcrypt.gensalt()
+#         ).decode("utf-8")
+
+#         users_collection.update_one(
+#             {"email": email},
+#             {"$set": {"password": hashed_password}}
+#         )
+
+#         return jsonify({"status": "success"})
+
+#     except Exception as e:
+#         print("FORGOT ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= TRAINING DATA =================
+# @app.route('/training-data', methods=['POST'])
+# def training_data():
+#     try:
+#         data = request.get_json()
+#         training_collection.insert_one(data)
+#         return jsonify({"status": "success"})
+#     except Exception as e:
+#         print("TRAINING ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= COMPLETE TRAINING =================
+# @app.route('/complete-training', methods=['POST'])
+# def complete_training():
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("userId")
+
+#         users_collection.update_one(
+#             {"_id": ObjectId(user_id)},
+#             {"$set": {"trainingCompleted": True}}
+#         )
+
+#         return jsonify({"status": "training_completed"})
+
+#     except Exception as e:
+#         print("COMPLETE TRAINING ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= USER STATUS =================
+# @app.route('/user-status/<user_id>', methods=['GET'])
+# def user_status(user_id):
+#     try:
+#         user = users_collection.find_one({"_id": ObjectId(user_id)})
+
+#         if not user:
+#             return jsonify({"status": "not_found"})
+
+#         return jsonify({
+#             "trainingCompleted": user.get("trainingCompleted", False),
+#             "examCompleted": user.get("examCompleted", False)
+#         })
+
+#     except Exception as e:
+#         print("STATUS ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= ANALYSIS API =================
+# @app.route('/analyze-user/<user_id>', methods=['GET'])
+# def analyze_user(user_id):
+#     try:
+#         result = detect_fraud(user_id)
+
+#         analysis_collection.insert_one({
+#             "user_id": user_id,
+#             "result": result,
+#             "timestamp": datetime.utcnow()
+#         })
+
+#         return jsonify({
+#             "status": "success",
+#             "userId": user_id,
+#             "risk_score": result.get("risk_score", 0),
+#             "fraud_status": result.get("status", "UNKNOWN"),
+#             "saved_to_db": True
+#         })
+
+#     except Exception as e:
+#         print("ANALYZE ERROR:", e)
+#         return jsonify({
+#             "status": "error",
+#             "message": str(e)
+#         })
+
+
+# # ================= HOME =================
+# @app.route("/")
+# def home():
+#     return "🚀 Backend running with Module 2 + 3 + DB integration"
+
+
+# # ================= SERVER =================
+# if __name__ == "__main__":
+#     print("🚀 SERVER RUNNING ON http://localhost:5000")
+#     app.run(debug=True, port=5000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from pymongo import MongoClient
+# import bcrypt
+# from bson import ObjectId
+# from datetime import datetime
+
+# import sys
+# import os
+
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# # ================= MODULE 3 IMPORTS =================
+# from module_3.routes.behavior_routes import behavior_bp
+# from module_3.routes.fraud_routes import fraud_bp
+# from module_3.routes.ai_routes import ai_bp
+
+# from module_3.services.fraud_detection import detect_fraud
+
+# # ⭐ ADD THIS (Module 3 PROCESS ROUTE CONNECT)
+# from module_3.routes.process_routes import module3_bp
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # ================= DB =================
+# client = MongoClient("mongodb://localhost:27017/")
+# db = client["keystrokeAI_DB"]
+
+# users_collection = db["users"]
+# training_collection = db["training_data"]
+# analysis_collection = db["analysis_results"]
+
+# # ================= BLUEPRINT REGISTRATION =================
+# app.register_blueprint(behavior_bp, url_prefix="/api/behavior")
+# app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
+# app.register_blueprint(ai_bp, url_prefix="/api/ai")
+
+# # ⭐ MODULE 3 MAIN PROCESS ROUTE ADDED
+# app.register_blueprint(module3_bp, url_prefix="/api/process")
+
+# # ================= REGISTER =================
+# @app.route('/register', methods=['POST'])
+# def register():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         if not username or not email or not password:
+#             return jsonify({"status": "fail"})
+
+#         existing = users_collection.find_one({
+#             "$or": [{"username": username}, {"email": email}]
+#         })
+
+#         if existing:
+#             return jsonify({"status": "exists"})
+
+#         hashed_password = bcrypt.hashpw(
+#             password.encode("utf-8"),
+#             bcrypt.gensalt()
+#         ).decode("utf-8")
+
+#         users_collection.insert_one({
+#             "username": username,
+#             "email": email,
+#             "password": hashed_password,
+#             "trainingCompleted": False,
+#             "examCompleted": False
+#         })
+
+#         return jsonify({"status": "success"})
+
+#     except Exception as e:
+#         print("REGISTER ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= LOGIN =================
+# @app.route('/login', methods=['POST'])
+# def login():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         user = users_collection.find_one({"username": username})
+
+#         if not user:
+#             return jsonify({"status": "not_registered"})
+
+#         stored_password = user.get("password")
+
+#         if isinstance(stored_password, str):
+#             stored_password = stored_password.encode("utf-8")
+
+#         if not bcrypt.checkpw(password.encode("utf-8"), stored_password):
+#             return jsonify({"status": "wrong_password"})
+
+#         return jsonify({
+#             "status": "success",
+#             "userId": str(user["_id"]),
+#             "username": user["username"],
+#             "email": user["email"]
+#         })
+
+#     except Exception as e:
+#         print("LOGIN ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= TRAINING COMPLETE =================
+# @app.route('/complete-training', methods=['POST'])
+# def complete_training():
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("userId")
+
+#         users_collection.update_one(
+#             {"_id": ObjectId(user_id)},
+#             {"$set": {"trainingCompleted": True}}
+#         )
+
+#         return jsonify({"status": "training_completed"})
+
+#     except Exception as e:
+#         print("ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= USER STATUS =================
+# @app.route('/user-status/<user_id>', methods=['GET'])
+# def user_status(user_id):
+#     try:
+#         user = users_collection.find_one({"_id": ObjectId(user_id)})
+
+#         return jsonify({
+#             "trainingCompleted": user.get("trainingCompleted", False),
+#             "examCompleted": user.get("examCompleted", False)
+#         })
+
+#     except Exception as e:
+#         print("STATUS ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= ANALYSIS =================
+# @app.route('/analyze-user/<user_id>', methods=['GET'])
+# def analyze_user(user_id):
+#     try:
+#         result = detect_fraud(user_id)
+
+#         analysis_collection.insert_one({
+#             "user_id": user_id,
+#             "result": result,
+#             "timestamp": datetime.utcnow()
+#         })
+
+#         return jsonify({
+#             "status": "success",
+#             "risk_score": result.get("risk_score", 0),
+#             "fraud_status": result.get("status", "UNKNOWN")
+#         })
+
+#     except Exception as e:
+#         print("ANALYZE ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= HOME =================
+# @app.route("/")
+# def home():
+#     return "🚀 Backend running with Module 2 + 3 + AI pipeline ready"
+
+
+# # ================= SERVER =================
+# if __name__ == "__main__":
+#     print("🚀 SERVER RUNNING http://localhost:5000")
+#     app.run(debug=True, port=5000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from pymongo import MongoClient
+# import bcrypt
+# from bson import ObjectId
+# from datetime import datetime
+
+# import sys
+# import os
+
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# # ================= MODULE 3 IMPORTS =================
+# from module_3.routes.behavior_routes import behavior_bp
+# from module_3.routes.fraud_routes import fraud_bp
+# from module_3.routes.ai_routes import ai_bp
+# # from module_3.routes.process_routes import module3_bp
+# # from module_3.routes.routes import module3_bp
+# from module_3.routes.routes import module3_bp
+# from module_3.services.fraud_detection import detect_fraud
+
+# # ================= APP INIT =================
+# app = Flask(__name__)
+# CORS(app)
+
+# # ================= DB =================
+# client = MongoClient("mongodb://localhost:27017/")
+# db = client["keystrokeAI_DB"]
+
+# users_collection = db["users"]
+# training_collection = db["training_data"]
+# analysis_collection = db["analysis_results"]
+
+# # ================= BLUEPRINT REGISTRATION =================
+# app.register_blueprint(behavior_bp, url_prefix="/api/behavior")
+# app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
+# app.register_blueprint(ai_bp, url_prefix="/api/ai")
+
+# # ✅ FIXED (clean URL)
+# app.register_blueprint(module3_bp, url_prefix="/api/module3")
+
+
+# # ================= REGISTER =================
+# @app.route('/register', methods=['POST'])
+# def register():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         if not username or not email or not password:
+#             return jsonify({"status": "fail"})
+
+#         existing = users_collection.find_one({
+#             "$or": [{"username": username}, {"email": email}]
+#         })
+
+#         if existing:
+#             return jsonify({"status": "exists"})
+
+#         hashed_password = bcrypt.hashpw(
+#             password.encode("utf-8"),
+#             bcrypt.gensalt()
+#         ).decode("utf-8")
+
+#         users_collection.insert_one({
+#             "username": username,
+#             "email": email,
+#             "password": hashed_password,
+#             "trainingCompleted": False,
+#             "examCompleted": False
+#         })
+
+#         return jsonify({"status": "success"})
+
+#     except Exception as e:
+#         print("REGISTER ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= LOGIN =================
+# @app.route('/login', methods=['POST'])
+# def login():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         user = users_collection.find_one({"username": username})
+
+#         if not user:
+#             return jsonify({"status": "not_registered"})
+
+#         stored_password = user.get("password")
+
+#         if isinstance(stored_password, str):
+#             stored_password = stored_password.encode("utf-8")
+
+#         if not bcrypt.checkpw(password.encode("utf-8"), stored_password):
+#             return jsonify({"status": "wrong_password"})
+
+#         return jsonify({
+#             "status": "success",
+#             "userId": str(user["_id"]),
+#             "username": user["username"],
+#             "email": user["email"]
+#         })
+
+#     except Exception as e:
+#         print("LOGIN ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= TRAINING COMPLETE =================
+# @app.route('/complete-training', methods=['POST'])
+# def complete_training():
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("userId")
+
+#         users_collection.update_one(
+#             {"_id": ObjectId(user_id)},
+#             {"$set": {"trainingCompleted": True}}
+#         )
+
+#         return jsonify({"status": "training_completed"})
+
+#     except Exception as e:
+#         print("ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= USER STATUS =================
+# @app.route('/user-status/<user_id>', methods=['GET'])
+# def user_status(user_id):
+#     try:
+#         user = users_collection.find_one({"_id": ObjectId(user_id)})
+
+#         return jsonify({
+#             "trainingCompleted": user.get("trainingCompleted", False),
+#             "examCompleted": user.get("examCompleted", False)
+#         })
+
+#     except Exception as e:
+#         print("STATUS ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= ANALYSIS =================
+# @app.route('/analyze-user/<user_id>', methods=['GET'])
+# def analyze_user(user_id):
+#     try:
+#         result = detect_fraud(user_id)
+
+#         analysis_collection.insert_one({
+#             "user_id": user_id,
+#             "result": result,
+#             "timestamp": datetime.utcnow()
+#         })
+
+#         return jsonify({
+#             "status": "success",
+#             "risk_score": result.get("risk_score", 0),
+#             "fraud_status": result.get("status", "UNKNOWN")
+#         })
+
+#     except Exception as e:
+#         print("ANALYZE ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= HOME =================
+# @app.route("/")
+# def home():
+#     return "🚀 Backend running (Module 2 + 3 ready, waiting for Module 4)"
+
+
+# # ================= SERVER =================
+# if __name__ == "__main__":
+#     print("🚀 SERVER RUNNING http://localhost:5000")
+#     app.run(debug=True, port=5000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from pymongo import MongoClient
+# import bcrypt
+# from bson import ObjectId
+# from datetime import datetime
+
+# import sys
+# import os
+
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# # ================= MODULE 3 IMPORTS =================
+# from module_3.routes.behavior_routes import behavior_bp
+# from module_3.routes.fraud_routes import fraud_bp
+# from module_3.routes.ai_routes import ai_bp
+# from module_3.routes.routes import module3_bp
+
+# from module_3.services.fraud_detection import detect_fraud
+
+# # ================= APP INIT =================
+# app = Flask(__name__)
+# CORS(app)
+
+# # ================= DB =================
+# client = MongoClient("mongodb://localhost:27017/")
+# db = client["keystrokeAI_DB"]
+
+# users_collection = db["users"]
+# training_collection = db["training_data"]
+# analysis_collection = db["analysis_results"]
+
+# # ================= BLUEPRINT REGISTRATION =================
+# app.register_blueprint(behavior_bp, url_prefix="/api/behavior")
+# app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
+# app.register_blueprint(ai_bp, url_prefix="/api/ai")
+
+# # ✅ Module 3 process route
+# app.register_blueprint(module3_bp, url_prefix="/api/module3")
+
+# # ================= REGISTER =================
+# @app.route('/register', methods=['POST'])
+# def register():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         email = data.get("email")
+#         password = data.get("password")
+
+#         if not username or not email or not password:
+#             return jsonify({"status": "fail"})
+
+#         existing = users_collection.find_one({
+#             "$or": [{"username": username}, {"email": email}]
+#         })
+
+#         if existing:
+#             return jsonify({"status": "exists"})
+
+#         hashed_password = bcrypt.hashpw(
+#             password.encode("utf-8"),
+#             bcrypt.gensalt()
+#         ).decode("utf-8")
+
+#         users_collection.insert_one({
+#             "username": username,
+#             "email": email,
+#             "password": hashed_password,
+#             "trainingCompleted": False,
+#             "examCompleted": False
+#         })
+
+#         return jsonify({"status": "success"})
+
+#     except Exception as e:
+#         print("REGISTER ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= LOGIN =================
+# @app.route('/login', methods=['POST'])
+# def login():
+#     try:
+#         data = request.get_json()
+
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         user = users_collection.find_one({"username": username})
+
+#         if not user:
+#             return jsonify({"status": "not_registered"})
+
+#         stored_password = user.get("password")
+
+#         if isinstance(stored_password, str):
+#             stored_password = stored_password.encode("utf-8")
+
+#         if not bcrypt.checkpw(password.encode("utf-8"), stored_password):
+#             return jsonify({"status": "wrong_password"})
+
+#         return jsonify({
+#             "status": "success",
+#             "userId": str(user["_id"]),
+#             "username": user["username"],
+#             "email": user["email"]
+#         })
+
+#     except Exception as e:
+#         print("LOGIN ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= TRAINING COMPLETE =================
+# @app.route('/complete-training', methods=['POST'])
+# def complete_training():
+#     try:
+#         data = request.get_json()
+#         user_id = data.get("userId")
+
+#         users_collection.update_one(
+#             {"_id": ObjectId(user_id)},
+#             {"$set": {"trainingCompleted": True}}
+#         )
+
+#         return jsonify({"status": "training_completed"})
+
+#     except Exception as e:
+#         print("ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= USER STATUS =================
+# @app.route('/user-status/<user_id>', methods=['GET'])
+# def user_status(user_id):
+#     try:
+#         user = users_collection.find_one({"_id": ObjectId(user_id)})
+
+#         return jsonify({
+#             "trainingCompleted": user.get("trainingCompleted", False),
+#             "examCompleted": user.get("examCompleted", False)
+#         })
+
+#     except Exception as e:
+#         print("STATUS ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= ANALYSIS =================
+# @app.route('/analyze-user/<user_id>', methods=['GET'])
+# def analyze_user(user_id):
+#     try:
+#         result = detect_fraud(user_id)
+
+#         analysis_collection.insert_one({
+#             "user_id": user_id,
+#             "result": result,
+#             "timestamp": datetime.utcnow()
+#         })
+
+#         return jsonify({
+#             "status": "success",
+#             "risk_score": result.get("risk_score", 0),
+#             "fraud_status": result.get("status", "UNKNOWN")
+#         })
+
+#     except Exception as e:
+#         print("ANALYZE ERROR:", e)
+#         return jsonify({"status": "error"})
+
+
+# # ================= HOME =================
+# @app.route("/")
+# def home():
+#     return "🚀 Backend running (Module 2 + 3 only)"
+
+
+# # ================= SERVER =================
+# if __name__ == "__main__":
+#     print("🚀 SERVER RUNNING http://localhost:5000")
+#     app.run(debug=True, port=5000)
+
+
+
+
+
+
+
+
+
+
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -2222,44 +3060,42 @@ import bcrypt
 from bson import ObjectId
 from datetime import datetime
 
-# ================= FIX: PATH HANDLING =================
 import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# ================= MODULE 3 IMPORTS (FIXED) =================
+# ================= MODULE 3 IMPORTS =================
 from module_3.routes.behavior_routes import behavior_bp
 from module_3.routes.fraud_routes import fraud_bp
 from module_3.routes.ai_routes import ai_bp
+from module_3.routes.routes import module3_bp
 
 from module_3.services.fraud_detection import detect_fraud
 
+# ================= APP INIT =================
 app = Flask(__name__)
 CORS(app)
 
 # ================= DB =================
-# ================= DB =================
 client = MongoClient("mongodb://localhost:27017/")
-db = client["keystrokeAI_DB"]   # ← NEW DATABASE NAME
+db = client["keystrokeAI_DB"]
 
 users_collection = db["users"]
 training_collection = db["training_data"]
 analysis_collection = db["analysis_results"]
 
-# ================= REGISTER BLUEPRINTS =================
+# ================= BLUEPRINTS =================
 app.register_blueprint(behavior_bp, url_prefix="/api/behavior")
 app.register_blueprint(fraud_bp, url_prefix="/api/fraud")
 app.register_blueprint(ai_bp, url_prefix="/api/ai")
-
+app.register_blueprint(module3_bp, url_prefix="/api/module3")
 
 # ================= REGISTER =================
 @app.route('/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({"status": "fail"})
 
         username = data.get("username")
         email = data.get("email")
@@ -2291,17 +3127,13 @@ def register():
         return jsonify({"status": "success"})
 
     except Exception as e:
-        print("REGISTER ERROR:", e)
-        return jsonify({"status": "error"})
-
+        return jsonify({"status": "error", "message": str(e)})
 
 # ================= LOGIN =================
 @app.route('/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({"status": "fail"})
 
         username = data.get("username")
         password = data.get("password")
@@ -2327,54 +3159,9 @@ def login():
         })
 
     except Exception as e:
-        print("LOGIN ERROR:", e)
-        return jsonify({"status": "error"})
+        return jsonify({"status": "error", "message": str(e)})
 
-
-# ================= FORGOT PASSWORD =================
-@app.route('/forgot-password', methods=['POST'])
-def forgot_password():
-    try:
-        data = request.get_json()
-
-        email = data.get("email")
-        new_password = data.get("newPassword")
-
-        user = users_collection.find_one({"email": email})
-
-        if not user:
-            return jsonify({"status": "not_found"})
-
-        hashed_password = bcrypt.hashpw(
-            new_password.encode("utf-8"),
-            bcrypt.gensalt()
-        ).decode("utf-8")
-
-        users_collection.update_one(
-            {"email": email},
-            {"$set": {"password": hashed_password}}
-        )
-
-        return jsonify({"status": "success"})
-
-    except Exception as e:
-        print("FORGOT ERROR:", e)
-        return jsonify({"status": "error"})
-
-
-# ================= TRAINING DATA =================
-@app.route('/training-data', methods=['POST'])
-def training_data():
-    try:
-        data = request.get_json()
-        training_collection.insert_one(data)
-        return jsonify({"status": "success"})
-    except Exception as e:
-        print("TRAINING ERROR:", e)
-        return jsonify({"status": "error"})
-
-
-# ================= COMPLETE TRAINING =================
+# ================= TRAINING COMPLETE =================
 @app.route('/complete-training', methods=['POST'])
 def complete_training():
     try:
@@ -2389,9 +3176,7 @@ def complete_training():
         return jsonify({"status": "training_completed"})
 
     except Exception as e:
-        print("COMPLETE TRAINING ERROR:", e)
-        return jsonify({"status": "error"})
-
+        return jsonify({"status": "error", "message": str(e)})
 
 # ================= USER STATUS =================
 @app.route('/user-status/<user_id>', methods=['GET'])
@@ -2399,20 +3184,15 @@ def user_status(user_id):
     try:
         user = users_collection.find_one({"_id": ObjectId(user_id)})
 
-        if not user:
-            return jsonify({"status": "not_found"})
-
         return jsonify({
             "trainingCompleted": user.get("trainingCompleted", False),
             "examCompleted": user.get("examCompleted", False)
         })
 
     except Exception as e:
-        print("STATUS ERROR:", e)
-        return jsonify({"status": "error"})
+        return jsonify({"status": "error", "message": str(e)})
 
-
-# ================= ANALYSIS API =================
+# ================= ANALYSIS =================
 @app.route('/analyze-user/<user_id>', methods=['GET'])
 def analyze_user(user_id):
     try:
@@ -2426,40 +3206,96 @@ def analyze_user(user_id):
 
         return jsonify({
             "status": "success",
-            "userId": user_id,
             "risk_score": result.get("risk_score", 0),
-            "fraud_status": result.get("status", "UNKNOWN"),
-            "saved_to_db": True
+            "fraud_status": result.get("status", "UNKNOWN")
         })
 
     except Exception as e:
-        print("ANALYZE ERROR:", e)
+        return jsonify({"status": "error", "message": str(e)})
+
+# ================= 🔥 FIXED COMPARE API =================
+# @app.route("/api/compare", methods=["POST"])
+# def compare():
+#     try:
+#         data = request.get_json()
+
+#         user_id = data.get("userId")
+#         key_data = data.get("keyData", [])
+#         mouse_data = data.get("mouseData", [])
+
+#         # ✅ FIXED FIELD NAME (IMPORTANT)
+#         training_data = list(training_collection.find({"user_id": user_id}))
+
+#         return jsonify({
+#             "status": "OK",
+#             "message": "compare working",
+#             "training_sessions": len(training_data),
+#             "key_events": len(key_data),
+#             "mouse_events": len(mouse_data)
+#         })
+
+#     except Exception as e:
+#         return jsonify({
+#             "status": "ERROR",
+#             "message": str(e)
+#         })
+
+
+
+
+
+
+# ================= 🔥 FIXED COMPARE API =================
+@app.route("/api/compare", methods=["POST"])
+def compare():
+    try:
+        data = request.get_json()
+
+        user_id = data.get("userId")
+        key_data = data.get("keyData", [])
+        mouse_data = data.get("mouseData", [])
+
+        if not user_id:
+            return jsonify({
+                "status": "ERROR",
+                "message": "userId missing"
+            })
+
+        # ✅ SAFE FIX: supports both field names in DB
+        training_data = list(training_collection.find({
+            "$or": [
+                {"user_id": user_id},
+                {"userId": user_id}
+            ]
+        }))
+
         return jsonify({
-            "status": "error",
+            "status": "OK",
+            "message": "compare working",
+            "training_sessions": len(training_data),
+            "key_events": len(key_data),
+            "mouse_events": len(mouse_data)
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "ERROR",
             "message": str(e)
         })
+
+
+
+
+
+
 
 
 # ================= HOME =================
 @app.route("/")
 def home():
-    return "🚀 Backend running with Module 2 + 3 + DB integration"
-
+    return "🚀 Backend running (Fixed version)"
 
 # ================= SERVER =================
 if __name__ == "__main__":
-    print("🚀 SERVER RUNNING ON http://localhost:5000")
+    print("🚀 SERVER RUNNING http://localhost:5000")
     app.run(debug=True, port=5000)
-
-
-
-
-
-
-
-
-
-
-
-
-
