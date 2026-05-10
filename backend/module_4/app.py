@@ -675,6 +675,588 @@
 
 
 
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+
+# from services.data_loader import get_baseline
+# from model.siamese_network import SiameseNetwork
+
+# import torch
+# import torch.nn.functional as F
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # -------------------------
+# # LOAD MODEL
+# # -------------------------
+# model = SiameseNetwork()
+# model.eval()
+
+
+# # -------------------------
+# # CLEAN FEATURES
+# # -------------------------
+# def clean_features(data):
+#     cleaned = {}
+#     for k, v in data.items():
+#         try:
+#             cleaned[k] = float(v)
+#         except:
+#             cleaned[k] = 0.0
+#     return cleaned
+
+
+# # -------------------------
+# # MAIN API
+# # -------------------------
+# @app.route("/api/compare", methods=["POST"])
+# def compare():
+#     try:
+#         data = request.get_json()  # safer than request.json
+
+#         print("DEBUG REQUEST:", data)
+
+#         if not data:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Empty request body"
+#             })
+
+#         user_id = data.get("userId")
+#         current = data.get("features")
+
+#         # -------------------------
+#         # VALIDATION FIX
+#         # -------------------------
+#         if not user_id or current is None:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Missing userId or features"
+#             })
+
+#         # -------------------------
+#         # GET BASELINE
+#         # -------------------------
+#         baseline = get_baseline(user_id)
+
+#         if not baseline:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "No baseline found in DB"
+#             })
+
+#         # -------------------------
+#         # CLEAN DATA
+#         # -------------------------
+#         baseline = clean_features(baseline)
+#         current = clean_features(current)
+
+#         # -------------------------
+#         # ALIGN FEATURES
+#         # -------------------------
+#         keys = sorted(baseline.keys())
+
+#         base_list = [baseline[k] for k in keys]
+#         curr_list = [current.get(k, 0.0) for k in keys]
+
+#         # -------------------------
+#         # TENSORS (FIX SHAPE ISSUE)
+#         # -------------------------
+#         base_tensor = torch.tensor([base_list], dtype=torch.float32)
+#         curr_tensor = torch.tensor([curr_list], dtype=torch.float32)
+
+#         # -------------------------
+#         # SIAMESE INFERENCE
+#         # -------------------------
+#         with torch.no_grad():
+#             out1 = model.forward_once(base_tensor)
+#             out2 = model.forward_once(curr_tensor)
+
+#             similarity = F.cosine_similarity(out1, out2)
+
+#         score = float(similarity.item())
+
+#         # -------------------------
+#         # ALERT LOGIC
+#         # -------------------------
+#         alert = score < 0.7
+
+#         print("SCORE:", score, "ALERT:", alert)
+
+#         return jsonify({
+#             "status": "OK",
+#             "similarity": score,
+#             "alert": alert
+#         })
+
+#     except Exception as e:
+#         print("ERROR:", e)
+#         return jsonify({
+#             "status": "ERROR",
+#             "message": str(e)
+#         })
+
+
+# # -------------------------
+# # HOME
+# # -------------------------
+# @app.route("/")
+# def home():
+#     return "🧠 Module 4 Running"
+
+
+# # -------------------------
+# # RUN SERVER
+# # -------------------------
+# if __name__ == "__main__":
+#     print("Running on http://127.0.0.1:5001")
+
+#     app.run(
+#         port=5001,
+#         debug=False,
+#         threaded=True,
+#         use_reloader=False
+#     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+
+# from services.data_loader import get_baseline
+# from model.siamese_network import SiameseNetwork
+
+# import torch
+# import torch.nn.functional as F
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # -------------------------
+# # LOAD MODEL
+# # -------------------------
+# model = SiameseNetwork()
+# model.eval()
+
+# # -------------------------
+# # CONFIG (TUNABLE)
+# # -------------------------
+# SIMILARITY_THRESHOLD = 0.81    # 🔥 stricter than before
+# SPEED_MULTIPLIER = 1.5          # 🔥 fast typing detection
+
+# # -------------------------
+# # CLEAN FEATURES
+# # -------------------------
+# def clean_features(data):
+#     cleaned = {}
+#     for k, v in data.items():
+#         try:
+#             cleaned[k] = float(v)
+#         except:
+#             cleaned[k] = 0.0
+#     return cleaned
+
+
+# # -------------------------
+# # MAIN API
+# # -------------------------
+# @app.route("/api/compare", methods=["POST"])
+# def compare():
+#     try:
+#         data = request.get_json()
+
+#         print("DEBUG REQUEST:", data)
+
+#         if not data:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Empty request body"
+#             })
+
+#         user_id = data.get("userId")
+#         current = data.get("features")
+
+#         # -------------------------
+#         # VALIDATION
+#         # -------------------------
+#         if not user_id or current is None:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Missing userId or features"
+#             })
+
+#         # -------------------------
+#         # GET BASELINE
+#         # -------------------------
+#         baseline = get_baseline(user_id)
+
+#         if not baseline:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "No baseline found in DB"
+#             })
+
+#         # -------------------------
+#         # CLEAN DATA
+#         # -------------------------
+#         baseline = clean_features(baseline)
+#         current = clean_features(current)
+
+#         # -------------------------
+#         # ALIGN FEATURES
+#         # -------------------------
+#         keys = sorted(baseline.keys())
+
+#         base_list = [baseline[k] for k in keys]
+#         curr_list = [current.get(k, 0.0) for k in keys]
+
+#         # -------------------------
+#         # TENSORS
+#         # -------------------------
+#         base_tensor = torch.tensor([base_list], dtype=torch.float32)
+#         curr_tensor = torch.tensor([curr_list], dtype=torch.float32)
+
+#         # -------------------------
+#         # SIAMESE INFERENCE
+#         # -------------------------
+#         with torch.no_grad():
+#             out1 = model.forward_once(base_tensor)
+#             out2 = model.forward_once(curr_tensor)
+
+#             similarity = F.cosine_similarity(out1, out2)
+
+#         score = float(similarity.item())
+
+#         # -------------------------
+#         # 🔥 ALERT LOGIC (FIXED)
+#         # -------------------------
+#         baseline_speed = baseline.get("typing_speed", 0)
+#         current_speed = current.get("typing_speed", 0)
+
+#         alert = False
+#         reason = "NORMAL"
+
+#         # ML similarity check
+#         if score < SIMILARITY_THRESHOLD:
+#             alert = True
+#             reason = "LOW_SIMILARITY"
+
+#         # Speed spike detection
+#         if baseline_speed > 0 and current_speed > baseline_speed * SPEED_MULTIPLIER:
+#             alert = True
+#             reason = "TYPING_SPEED_ANOMALY"
+
+#         print(
+#             "SCORE:", score,
+#             "| BASE:", baseline_speed,
+#             "| CURR:", current_speed,
+#             "| ALERT:", alert,
+#             "| REASON:", reason
+#         )
+
+#         # -------------------------
+#         # RESPONSE
+#         # -------------------------
+#         return jsonify({
+#             "status": "OK",
+#             "similarity": score,
+#             "alert": alert,
+#             "reason": reason
+#         })
+
+#     except Exception as e:
+#         print("ERROR:", e)
+#         return jsonify({
+#             "status": "ERROR",
+#             "message": str(e)
+#         })
+
+
+# # -------------------------
+# # HOME
+# # -------------------------
+# @app.route("/")
+# def home():
+#     return "🧠 Module 4 Running"
+
+
+# # -------------------------
+# # RUN SERVER
+# # -------------------------
+# if __name__ == "__main__":
+#     print("Running on http://127.0.0.1:5001")
+
+#     app.run(
+#         port=5001,
+#         debug=False,
+#         threaded=True,
+#         use_reloader=False
+#     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+
+# from services.data_loader import get_baseline
+# from model.siamese_network import SiameseNetwork
+
+# import torch
+# import torch.nn.functional as F
+
+# app = Flask(__name__)
+# CORS(app)
+
+# # -------------------------
+# # LOAD MODEL
+# # -------------------------
+# model = SiameseNetwork()
+# model.eval()
+
+# # -------------------------
+# # CONFIG (TUNABLE)
+# # -------------------------
+# SIMILARITY_THRESHOLD = 0.81   # 🔥 ALERT below this
+# SPEED_MULTIPLIER = 1.5        # 🔥 fast typing detection
+
+# # -------------------------
+# # CLEAN FEATURES
+# # -------------------------
+# def clean_features(data):
+#     cleaned = {}
+#     for k, v in data.items():
+#         try:
+#             cleaned[k] = float(v)
+#         except:
+#             cleaned[k] = 0.0
+#     return cleaned
+
+
+# # -------------------------
+# # MAIN API
+# # -------------------------
+# @app.route("/api/compare", methods=["POST"])
+# def compare():
+#     try:
+#         data = request.get_json()
+
+#         print("📥 REQUEST:", data)
+
+#         if not data:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Empty request body"
+#             })
+
+#         user_id = data.get("userId")
+#         current = data.get("features")
+
+#         if not user_id or current is None:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "Missing userId or features"
+#             })
+
+#         # -------------------------
+#         # GET BASELINE
+#         # -------------------------
+#         baseline = get_baseline(user_id)
+
+#         if not baseline:
+#             return jsonify({
+#                 "status": "NO_DATA",
+#                 "message": "No baseline found in DB"
+#             })
+
+#         # -------------------------
+#         # CLEAN DATA
+#         # -------------------------
+#         baseline = clean_features(baseline)
+#         current = clean_features(current)
+
+#         # -------------------------
+#         # ALIGN FEATURES
+#         # -------------------------
+#         keys = sorted(baseline.keys())
+
+#         base_list = [baseline[k] for k in keys]
+#         curr_list = [current.get(k, 0.0) for k in keys]
+
+#         # -------------------------
+#         # TENSORS
+#         # -------------------------
+#         base_tensor = torch.tensor([base_list], dtype=torch.float32)
+#         curr_tensor = torch.tensor([curr_list], dtype=torch.float32)
+
+#         # -------------------------
+#         # SIAMESE INFERENCE
+#         # -------------------------
+#         with torch.no_grad():
+#             out1 = model.forward_once(base_tensor)
+#             out2 = model.forward_once(curr_tensor)
+
+#             similarity = F.cosine_similarity(out1, out2)
+
+#         score = float(similarity.item())
+
+#         # 🔥 DEBUG PRINT (IMPORTANT)
+#         print("🔥 THRESHOLD:", SIMILARITY_THRESHOLD, "| SCORE:", score)
+
+#         # -------------------------
+#         # ALERT LOGIC
+#         # -------------------------
+#         baseline_speed = baseline.get("typing_speed", 0)
+#         current_speed = current.get("typing_speed", 0)
+
+#         alert = False
+#         reason = "NORMAL"
+
+#         # ✅ SIMILARITY CHECK (MAIN)
+#         if score <= SIMILARITY_THRESHOLD:
+#             alert = True
+#             reason = "LOW_SIMILARITY"
+
+#         # ✅ SPEED ANOMALY CHECK
+#         if baseline_speed > 0 and current_speed > baseline_speed * SPEED_MULTIPLIER:
+#             alert = True
+#             reason = "TYPING_SPEED_ANOMALY"
+
+#         # -------------------------
+#         # FINAL DEBUG
+#         # -------------------------
+#         print(
+#             "📊 SCORE:", score,
+#             "| BASE_SPEED:", baseline_speed,
+#             "| CURR_SPEED:", current_speed,
+#             "| ALERT:", alert,
+#             "| REASON:", reason
+#         )
+
+#         # -------------------------
+#         # RESPONSE
+#         # -------------------------
+#         return jsonify({
+#             "status": "OK",
+#             "similarity": score,
+#             "alert": alert,
+#             "reason": reason
+#         })
+
+#     except Exception as e:
+#         print("❌ ERROR:", e)
+#         return jsonify({
+#             "status": "ERROR",
+#             "message": str(e)
+#         })
+
+
+# # -------------------------
+# # HOME
+# # -------------------------
+# @app.route("/")
+# def home():
+#     return "🧠 Module 4 Running"
+
+
+# # -------------------------
+# # RUN SERVER
+# # -------------------------
+# if __name__ == "__main__":
+#     print("🚀 Running on http://127.0.0.1:5001")
+
+#     app.run(
+#         port=5001,
+#         debug=False,
+#         threaded=True,
+#         use_reloader=False
+#     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -693,6 +1275,12 @@ CORS(app)
 model = SiameseNetwork()
 model.eval()
 
+# -------------------------
+# CONFIG (TUNABLE)
+# -------------------------
+SIMILARITY_THRESHOLD_LOW = 0.65   # 🚨 definite intruder
+SIMILARITY_THRESHOLD_HIGH = 0.75  # ✅ safe zone
+SPEED_MULTIPLIER = 2              # 🔥 relaxed (avoid false alert)
 
 # -------------------------
 # CLEAN FEATURES
@@ -713,9 +1301,9 @@ def clean_features(data):
 @app.route("/api/compare", methods=["POST"])
 def compare():
     try:
-        data = request.get_json()  # safer than request.json
+        data = request.get_json()
 
-        print("DEBUG REQUEST:", data)
+        print("📥 REQUEST:", data)
 
         if not data:
             return jsonify({
@@ -726,9 +1314,6 @@ def compare():
         user_id = data.get("userId")
         current = data.get("features")
 
-        # -------------------------
-        # VALIDATION FIX
-        # -------------------------
         if not user_id or current is None:
             return jsonify({
                 "status": "NO_DATA",
@@ -761,7 +1346,7 @@ def compare():
         curr_list = [current.get(k, 0.0) for k in keys]
 
         # -------------------------
-        # TENSORS (FIX SHAPE ISSUE)
+        # TENSORS
         # -------------------------
         base_tensor = torch.tensor([base_list], dtype=torch.float32)
         curr_tensor = torch.tensor([curr_list], dtype=torch.float32)
@@ -777,21 +1362,61 @@ def compare():
 
         score = float(similarity.item())
 
-        # -------------------------
-        # ALERT LOGIC
-        # -------------------------
-        alert = score < 0.7
+        print("🔥 SCORE:", score)
 
-        print("SCORE:", score, "ALERT:", alert)
+        # -------------------------
+        # ALERT LOGIC (UPDATED)
+        # -------------------------
+        baseline_speed = baseline.get("typing_speed", 0)
+        current_speed = current.get("typing_speed", 0)
 
+        alert = False
+        reason = "NORMAL"
+
+        # 🔹 SIMILARITY ZONES
+        if score < SIMILARITY_THRESHOLD_LOW:
+            alert = True
+            reason = "LOW_SIMILARITY"
+
+        elif score < SIMILARITY_THRESHOLD_HIGH:
+            alert = False
+            reason = "BORDERLINE"   # ⚠️ allowed
+
+        else:
+            alert = False
+            reason = "HIGH_SIMILARITY"
+
+        # 🔹 SPEED CHECK (only extreme case)
+        if (
+            baseline_speed > 0 and
+            current_speed > baseline_speed * SPEED_MULTIPLIER
+        ):
+            alert = True
+            reason = "TYPING_SPEED_ANOMALY"
+
+        # -------------------------
+        # DEBUG
+        # -------------------------
+        print(
+            "📊 SCORE:", score,
+            "| BASE_SPEED:", baseline_speed,
+            "| CURR_SPEED:", current_speed,
+            "| ALERT:", alert,
+            "| REASON:", reason
+        )
+
+        # -------------------------
+        # RESPONSE
+        # -------------------------
         return jsonify({
             "status": "OK",
             "similarity": score,
-            "alert": alert
+            "alert": alert,
+            "reason": reason
         })
 
     except Exception as e:
-        print("ERROR:", e)
+        print("❌ ERROR:", e)
         return jsonify({
             "status": "ERROR",
             "message": str(e)
@@ -810,7 +1435,7 @@ def home():
 # RUN SERVER
 # -------------------------
 if __name__ == "__main__":
-    print("Running on http://127.0.0.1:5001")
+    print("🚀 Running on http://127.0.0.1:5001")
 
     app.run(
         port=5001,

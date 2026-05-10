@@ -1453,6 +1453,294 @@
 
 
 
+// import "./Exam.css";
+// import { useEffect, useRef, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
+// function Exam() {
+//   const navigate = useNavigate();
+
+//   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+//   const username =
+//     user?.username || user?.name || user?.email || "Guest";
+
+//   const userId =
+//     user?.userId || user?.id || user?._id || "guest_id";
+
+//   const [startExam, setStartExam] = useState(false);
+//   const [timeLeft, setTimeLeft] = useState(40 * 60);
+
+//   const [typeAnswers, setTypeAnswers] = useState({});
+//   const [mcqAnswers, setMcqAnswers] = useState({});
+
+//   const [keyData, setKeyData] = useState([]);
+//   const [mouseData, setMouseData] = useState([]);
+//   const [scrollData, setScrollData] = useState([]);
+
+//   // ✅ ADDED (fix setResult error)
+//   const [result, setResult] = useState(null);
+
+//   const keyDownTime = useRef({});
+
+//   // ✅ ADDED (fix live stale data issue)
+//   const keyRef = useRef([]);
+//   const mouseRef = useRef([]);
+
+//   const lastMouseTime = useRef(0);
+
+//   // ⏱ TIMER
+//   useEffect(() => {
+//     if (!startExam) return;
+
+//     const interval = setInterval(() => {
+//       setTimeLeft((prev) => {
+//         if (prev <= 1) {
+//           clearInterval(interval);
+//           handleSubmit();
+//           return 0;
+//         }
+//         return prev - 1;
+//       });
+//     }, 1000);
+
+//     return () => clearInterval(interval);
+//   }, [startExam]);
+
+//   // ⌨️ KEY TRACK
+//   const handleKeyDown = (e) => {
+//     keyDownTime.current[e.key] = Date.now();
+//   };
+
+//   const handleKeyUp = (e) => {
+//     const start = keyDownTime.current[e.key];
+//     const end = Date.now();
+
+//     if (start) {
+//       const data = {
+//         key: e.key,
+//         holdTime: end - start,
+//         time: Date.now(),
+//       };
+
+//       keyRef.current.push(data);
+
+//       setKeyData((prev) => [...prev, data]);
+//     }
+//   };
+
+//   // 🖱️ MOUSE (FIXED THROTTLE)
+//   const handleMouseMove = (e) => {
+//     const now = Date.now();
+//     if (now - lastMouseTime.current < 200) return;
+
+//     lastMouseTime.current = now;
+
+//     const data = {
+//       type: "move",
+//       x: e.clientX,
+//       y: e.clientY,
+//       time: now,
+//     };
+
+//     mouseRef.current.push(data);
+
+//     setMouseData((prev) => [...prev, data]);
+//   };
+
+//   const handleClick = (e) => {
+//     const data = {
+//       type: "click",
+//       x: e.clientX,
+//       y: e.clientY,
+//       time: Date.now(),
+//     };
+
+//     mouseRef.current.push(data);
+
+//     setMouseData((prev) => [...prev, data]);
+//   };
+
+//   const handleScroll = () => {
+//     setScrollData((prev) => [
+//       ...prev,
+//       { scrollY: window.scrollY, time: Date.now() },
+//     ]);
+//   };
+
+//   // ✍️ ANSWERS
+//   const handleTypeChange = (i, value) => {
+//     setTypeAnswers({ ...typeAnswers, [i]: value });
+//   };
+
+//   const handleMCQChange = (i, opt) => {
+//     setMcqAnswers({ ...mcqAnswers, [i]: opt });
+//   };
+
+//   // 🚀 SUBMIT
+//   const handleSubmit = async () => {
+//     const payload = {
+//       userId,
+//       username,
+//       typeAnswers,
+//       mcqAnswers,
+//       keyData,
+//       mouseData,
+//       scrollData,
+//       submittedAt: new Date(),
+//     };
+
+//     try {
+//       await fetch("http://localhost:5000/api/exam/submit", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(payload),
+//       });
+
+//       alert("Exam Submitted 🚀");
+//       navigate("/app/dashboard");
+//     } catch (err) {
+//       alert("Submission Failed");
+//     }
+//   };
+
+//   // 🚨 LIVE MONITORING (FIXED DATA ISSUE + setResult fix)
+//   useEffect(() => {
+//     if (!startExam) return;
+
+//     const interval = setInterval(async () => {
+//       try {
+//         const res = await fetch("http://127.0.0.1:5001/api/compare", {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//         userId: userId,
+//             keyData: keyRef.current,
+//             mouseData: mouseRef.current,
+//           }),
+//         });
+
+//         const data = await res.json();
+
+//         console.log("RESULT:", data);
+
+//         setResult(data); // ✅ FIXED
+
+//         if (data.alert) {
+//           toast.error("🚨 Suspicious Activity Detected!");
+//         }
+//       } catch (err) {
+//         console.log(err);
+//       }
+//     }, 8000);
+
+//     return () => clearInterval(interval);
+//   }, [startExam]);
+
+//   // FORMAT TIME
+//   const formatTime = (sec) => {
+//     const m = Math.floor(sec / 60);
+//     const s = sec % 60;
+//     return `${m}:${s < 10 ? "0" : ""}${s}`;
+//   };
+
+//   const handlePaste = (e) => {
+//     e.preventDefault();
+//     toast.error("❌ Paste not allowed!");
+//   };
+
+//   const typeQuestions = [
+//     "Explain keystroke dynamics.",
+//     "What is feature vector in ML?",
+//     "Define continuous authentication.",
+//   ];
+
+//   const mcqQuestions = [
+//     {
+//       q: "What does ML stand for?",
+//       options: ["Machine Learning", "Manual Logic", "Model Layer"],
+//     },
+//   ];
+
+//   if (!startExam) {
+//     return (
+//       <div className="popup-overlay">
+//         <div className="popup-box">
+//           <h2>🧪 FINAL EXAM READY</h2>
+//           <p>👤 Name: {username}</p>
+//           <p>⏱ Duration: 40 Minutes</p>
+
+//           <div className="popup-actions">
+//             <button onClick={() => setStartExam(true)}>Start Exam</button>
+//             <button onClick={() => navigate("/app/dashboard")}>
+//               Cancel
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div
+//       className="exam-container"
+//       onMouseMove={handleMouseMove}
+//       onClick={handleClick}
+//       onScroll={handleScroll}
+//     >
+//       <div className="exam-header">
+//         <div>👤 {username}</div>
+//         <div><h3>FINAL EXAM</h3></div>
+//         <div>⏱ {formatTime(timeLeft)}</div>
+//       </div>
+
+//       {typeQuestions.map((q, i) => (
+//         <div key={i} className="card">
+//           <p>{q}</p>
+//           <textarea
+//             onChange={(e) => handleTypeChange(i, e.target.value)}
+//             onKeyDown={handleKeyDown}
+//             onKeyUp={handleKeyUp}
+//             onPaste={handlePaste}
+//           />
+//         </div>
+//       ))}
+
+//       {mcqQuestions.map((q, i) => (
+//         <div key={i} className="card">
+//           <p>{q.q}</p>
+//           {q.options.map((opt, idx) => (
+//             <label key={idx}>
+//               <input
+//                 type="radio"
+//                 name={`mcq-${i}`}
+//                 onChange={() => handleMCQChange(i, opt)}
+//               />
+//               {opt}
+//             </label>
+//           ))}
+//         </div>
+//       ))}
+
+//       <button onClick={handleSubmit}>Submit Exam</button>
+
+//       <ToastContainer />
+//     </div>
+//   );
+// }
+
+// export default Exam;
+
+
+
+
+
+
+
+
+
 import "./Exam.css";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -1480,15 +1768,11 @@ function Exam() {
   const [mouseData, setMouseData] = useState([]);
   const [scrollData, setScrollData] = useState([]);
 
-  // ✅ ADDED (fix setResult error)
   const [result, setResult] = useState(null);
 
   const keyDownTime = useRef({});
-
-  // ✅ ADDED (fix live stale data issue)
   const keyRef = useRef([]);
   const mouseRef = useRef([]);
-
   const lastMouseTime = useRef(0);
 
   // ⏱ TIMER
@@ -1526,12 +1810,11 @@ function Exam() {
       };
 
       keyRef.current.push(data);
-
       setKeyData((prev) => [...prev, data]);
     }
   };
 
-  // 🖱️ MOUSE (FIXED THROTTLE)
+  // 🖱️ MOUSE TRACK
   const handleMouseMove = (e) => {
     const now = Date.now();
     if (now - lastMouseTime.current < 200) return;
@@ -1546,7 +1829,6 @@ function Exam() {
     };
 
     mouseRef.current.push(data);
-
     setMouseData((prev) => [...prev, data]);
   };
 
@@ -1559,7 +1841,6 @@ function Exam() {
     };
 
     mouseRef.current.push(data);
-
     setMouseData((prev) => [...prev, data]);
   };
 
@@ -1579,7 +1860,7 @@ function Exam() {
     setMcqAnswers({ ...mcqAnswers, [i]: opt });
   };
 
-  // 🚀 SUBMIT
+  // 🚀 SUBMIT EXAM
   const handleSubmit = async () => {
     const payload = {
       userId,
@@ -1606,40 +1887,122 @@ function Exam() {
     }
   };
 
-  // 🚨 LIVE MONITORING (FIXED DATA ISSUE + setResult fix)
+  // 🚨 LIVE MONITORING (FIXED ONLY HERE)
+  // useEffect(() => {
+  //   if (!startExam) return;
+
+  //   const interval = setInterval(async () => {
+  //     try {
+  //       const keys = keyRef.current;
+
+  //       // 🔥 FEATURES BUILDER (IMPORTANT FIX)
+  //       const features = {
+  //         typing_speed: keys.length > 0 ? keys.length / 10 : 0,
+  //         avg_hold_time:
+  //           keys.length > 0
+  //             ? keys.reduce((a, b) => a + (b.holdTime || 0), 0) / keys.length
+  //             : 0,
+  //         avg_delay: 0,
+  //         total_keys: keys.length,
+  //         idle_time: 0,
+  //       };
+
+  //       const res = await fetch("http://127.0.0.1:5001/api/compare", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           userId: userId,
+  //           features: features,   // ✅ FIXED
+  //         }),
+  //       });
+
+  //       const data = await res.json();
+
+  //       console.log("RESULT:", data);
+  //       setResult(data);
+
+  //       if (data.alert) {
+  //         toast.error("🚨 Suspicious Activity Detected!");
+  //       }
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   }, 4000);
+
+  //   return () => clearInterval(interval);
+  // }, [startExam]);
+
+
+
+
+
+
+
+  // const [alertShown, setAlertShown] = useState(false);
+
   useEffect(() => {
     if (!startExam) return;
 
     const interval = setInterval(async () => {
       try {
+        const keys = keyRef.current;
+        const duration = 4; // ⏱ interval seconds (VERY IMPORTANT)
+
+
+        const features = {
+          // typing_speed: keys.length,
+          typing_speed: keys.length / duration,   // ✅ FIXED
+
+          avg_hold_time:
+            keys.length > 0
+              ? keys.reduce((a, b) => a + (b.holdTime || 0), 0) / keys.length
+              : 0,
+          avg_delay: 0,
+          total_keys: keys.length,
+          idle_time: 0,
+        };
+
         const res = await fetch("http://127.0.0.1:5001/api/compare", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-        userId: userId,
-            keyData: keyRef.current,
-            mouseData: mouseRef.current,
+            userId: userId,
+            features: features,
           }),
         });
 
         const data = await res.json();
 
         console.log("RESULT:", data);
+        console.log("ALERT VALUE:", data.alert);
 
-        setResult(data); // ✅ FIXED
+        setResult(data);
 
         if (data.alert) {
           toast.error("🚨 Suspicious Activity Detected!");
+          setAlertShown(true);
         }
+
+
       } catch (err) {
         console.log(err);
       }
-    }, 8000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [startExam]);
 
-  // FORMAT TIME
+
+
+
+
+
+
+
+
+
+
+  // ⏱ FORMAT TIME
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
@@ -1732,3 +2095,15 @@ function Exam() {
 }
 
 export default Exam;
+
+
+
+
+
+
+
+
+
+
+
+
